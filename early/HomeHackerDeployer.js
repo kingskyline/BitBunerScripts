@@ -65,7 +65,7 @@ export async function main(ns) {
         let maxRam = ns.getServerMaxRam(server); // Max RAM on "home"
         let usedRam = ns.getServerUsedRam(server); // Used RAM on "home"
         let availRam = maxRam - usedRam; // Free RAM on "home"
-        let reservedRam = 3000; // 300GB to reserve in MB (correctly set here)
+        let reservedRam = 4000; // 300GB to reserve in MB (correctly set here)
         let usableRam = availRam - reservedRam; // Remaining usable RAM after reservation
 
         textblock += `Total RAM on 'home': ${ns.formatRam(maxRam)}\n`;

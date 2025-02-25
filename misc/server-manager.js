@@ -7,10 +7,12 @@ export async function main(ns) {
 
   const LOOP_DELAY = ns.args[0] || 1000 * 10; // Default loop delay (10 seconds)
   const CALCULATION_DELAY = 5; // Delay after calculations or server actions
-  const RESERVE_AMOUNT = 100_000_000_0; // Keep at least 100M
+  const RESERVE_AMOUNT = 1000000; // Keep at least 100M
+  const WAIT_TIME_AFTER_SERVER_24 = 1 * 60 * 1000; // 5 minutes in milliseconds
 
   let ram = 8; // Initial RAM threshold
   let servers = ns.getPurchasedServers(); // Get owned servers
+  let lastUpgradedServer = null; // Track the last upgraded server
 
   while (true) {
     ns.printf("Checking for servers with %s RAM.", ns.formatRam(ram));
@@ -33,6 +35,13 @@ export async function main(ns) {
           if (ns.upgradePurchasedServer(server, ram)) {
             ns.printf("%s upgraded to %s", server, ns.formatRam(ram));
             servers = ns.getPurchasedServers(); // Refresh list
+            lastUpgradedServer = server; // Track the last upgraded server
+
+            // Wait 5 minutes before upgrading the next server if it's server-24
+            if (server === "server-24") {
+              ns.printf("Waiting 5 minutes before upgrading next server.");
+              await ns.sleep(WAIT_TIME_AFTER_SERVER_24);
+            }
           }
         }
       } else {

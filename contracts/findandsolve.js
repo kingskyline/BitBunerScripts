@@ -1,112 +1,42 @@
-import {solvers} from "/contracts/solvers.js";
+import { getFilePath, getNsDataThroughFile, disableLogs, log } from 'utilites/dependacy/helpers.js';
+const scriptSolver = getFilePath("contracts/solvers.js");
 
+/** @param {NS} ns **/
 export async function main(ns) {
-    ns.disableLog("scan");
-    ns.disableLog("sleep");
+    disableLogs(ns, ["scan"]);
+
     while (true) {
-        await attemptAllContracts(ns);
-        await ns.sleep(60*1000);
-    }
-}
+        ns.print("Starting contract search...");
 
-export async function attemptAllContracts(ns) {
-    const contracts = getContracts(ns);
-    ns.print(`Found ${contracts.length} contracts.`);
-    for (const contract of contracts) {
-        await attemptContract(ns, contract);
-    }
-}
+        const servers = await getNsDataThroughFile(ns, 'scanAllServers(ns)');
+        ns.print(`Scanned ${servers.length} servers. Looking for contracts...`);
 
-export function getContracts(ns) {
-    const contracts = [];
-    for (const host of getAllHosts(ns)) {
-        for (const file of ns.ls(host)) {
-            if (file.match(/\.cct$/)) {
-                const contract = {
-                    host: host,
-                    file: file,
-                    type: ns.codingcontract.getContractType(file, host),
-                    triesRemaining: ns.codingcontract.getNumTriesRemaining(file, host)
-                };
-                contracts.push(contract);
-            }
+        // Retrieve all contracts
+        const contractsDb = servers.map(hostname => ({ hostname, contracts: ns.ls(hostname, '.cct') }))
+            .filter(o => o.contracts.length > 0)
+            .map(o => o.contracts.map(contract => ({ contract, hostname: o.hostname }))).flat();
+
+        if (contractsDb.length === 0) {
+            ns.print("No contracts found.");
+        } else {
+            ns.print(`Found ${contractsDb.length} contracts. Fetching contract details...`);
+
+            const serializedContractDb = JSON.stringify(contractsDb);
+            let contractsDictCommand = async (command, tempName) => await getNsDataThroughFile(ns,
+                `Object.fromEntries(JSON.parse(ns.args[0]).map(c => [c.contract, ${command}]))`, tempName, [serializedContractDb]);
+
+            let dictContractTypes = await contractsDictCommand('ns.codingcontract.getContractType(c.contract, c.hostname)', '/Temp/contract-types.txt');
+            let dictContractDataStrings = await contractsDictCommand('JSON.stringify(ns.codingcontract.getData(c.contract, c.hostname), jsonReplacer)', '/Temp/contract-data-stringified.txt');
+
+            contractsDb.forEach(c => c.type = dictContractTypes[c.contract]);
+            contractsDb.forEach(c => c.dataJson = dictContractDataStrings[c.contract]);
+
+            // Run the solver script
+            ns.print("Running contract solver...");
+            ns.run(scriptSolver, { temporary: true }, JSON.stringify(contractsDb));
         }
-    }
-    return contracts;
-}
 
-export async function attemptContract(ns, contract) {
-    const solver = solvers[contract.type];
-    if (solver) {
-        ns.print("Attempting " +JSON.stringify(contract,null,2));
-        const data = ns.codingcontract.getData(contract.file, contract.host);
-        try {
-            const solution = await runInWebWorker(solver, [data]);
-            const reward = ns.codingcontract.attempt(solution, contract.file, contract.host, {returnReward:true});
-            if (reward) {
-                ns.tprint(`${reward} for solving "${contract.type}" on ${contract.host}`);
-                ns.print(`${reward} for solving "${contract.type}" on ${contract.host}`);
-            }
-            else {
-                ns.tprint(`ERROR: Failed to solve "${contract.type}" on ${contract.host}`);
-                delete solvers[contract.type];
-            }
-        }
-        catch (error) {
-            ns.print(`ERROR solving ${contract.type}: ${error}`);
-        }
+        ns.print("Sleeping for 60 seconds before checking again...");
+        await ns.sleep(60000); // Wait 60 seconds before looping
     }
-    else {
-        ns.print(`WARNING: No solver for "${contract.type}" on ${contract.host}`);
-    }
-}
-
-function getAllHosts(ns) {
-    getAllHosts.cache ||= {};
-    const scanned = getAllHosts.cache;
-    const toScan = ['home'];
-    while (toScan.length > 0) {
-        const host = toScan.shift();
-        scanned[host] = true;
-        for (const nextHost of ns.scan(host)) {
-            if (!(nextHost in scanned)) {
-                toScan.push(nextHost);
-            }
-        }
-    }
-    const allHosts = Object.keys(scanned);
-    return allHosts;
-}
-
-async function runInWebWorker(fn, args, maxMs=1000) {
-    return new Promise((resolve, reject)=>{
-        let running = true;
-        const worker = makeWorker(fn, (result)=>{
-            running = false;
-            resolve(result);
-        });
-        setTimeout(()=>{
-            if (running) {
-                reject(`${maxMs} ms elapsed.`);
-            }
-            worker.terminate();
-        }, maxMs);
-        worker.postMessage(args);
-    });
-}
-
-function makeWorker(workerFunction, cb) {
-    const workerSrc = `
-    handler = (${workerFunction});
-    onmessage = (e) => {
-        result = handler.apply(this, e.data);
-        postMessage(result);
-    };`;
-    const workerBlob = new Blob([workerSrc]);
-    const workerBlobURL = URL.createObjectURL(workerBlob, { type: 'application/javascript; charset=utf-8' });
-    const worker = new Worker(workerBlobURL);
-    worker.onmessage = (e)=>{
-        cb(e.data);
-    };
-    return worker;
 }

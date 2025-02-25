@@ -4,21 +4,16 @@ export async function main(ns) {
     const scripts = [
         { script: "/utilites/BestCustomHud.js", delay: 10000 },
         { script: "/contracts/findandsolve.js", delay: 10000 },   
-        { script: "/misc/hacknet-manager.js", delay: 10000 },
-        { script: "/stats/ShowHackNetIncome.js", delay: 10000 },
-        { script: "/misc/server-manager.js", delay: 10000 },   
+        // { script: "/misc/hacknet-manager.js", delay: 10000 },
+        // { script: "/stats/ShowHackNetIncome.js", delay: 10000 },
+        // { script: "/misc/server-manager.js", delay: 10000 },   
         { script: "/early/EarlyhackerDeployer.js", delay: 10000 },
-        { script: "/early/BoughtServerHackerDeployer.js", delay: 10000 },
+        { script: "/Midgame/BoughtServerHackerDeployer.js", delay: 10000 },
         { script: "/early/HomeHackerDeployer.js", delay: 10000 },
-        { script: "/early/HomeHackerXPDeployer.js", delay: 10000 }
-
-
-     //   { script: "/stats/ShowHackedServersIncome.js", delay: 10000 },
-     //   { script: "/stats/ShowBoughtServersIncome.js", delay: 10000 } 
-
+        { script: "/early/HomeHackerXPDeployer.js", delay: 20000 }
     ];
 
-   // Function to print and log messages in a clean, structured way
+    // Function to print and log messages in a clean, structured way
     function logMessage(type, message) {
         let formattedMessage;
         switch (type) {

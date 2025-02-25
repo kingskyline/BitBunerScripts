@@ -14,8 +14,8 @@ export async function main(ns) {
   else if (currentHackingLevel < 30) { var target = "joesguns" }
   else if (currentHackingLevel < 120) { var target = "harakiri-sushi" }
   else if (currentHackingLevel < 300) { var target = "iron-gym" }
-  else if (currentHackingLevel < 500) { var target = "omega-net" }
-  else if (currentHackingLevel < 999) { var target = "rothman-uni" } 
+  else if (currentHackingLevel < 550) { var target = "omega-net" }
+  else if (currentHackingLevel < 999) { var target = "alpha-ent" } 
   else { var target = "rothman-uni" }
 
   while (serversToScan.length > 0) {

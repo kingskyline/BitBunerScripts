@@ -1,5 +1,5 @@
-import { jsonReviver, tail } from 'AutoPlay/helpers.js'
-const fUnsolvedContracts = 'AutoPlay/Temp/unsolved-contracts.txt'; // A global, persistent array of contracts we couldn't solve, so we don't repeatedly log about them.
+import { jsonReviver, tail } from '/AutoPlay/helpers.js'
+const fUnsolvedContracts = '/AutoPlay/Temp/unsolved-contracts.txt'; // A global, persistent array of contracts we couldn't solve, so we don't repeatedly log about them.
 
 let heartbeat = null;
 

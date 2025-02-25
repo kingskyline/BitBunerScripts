@@ -1,4 +1,4 @@
-import { getNsDataThroughFile, getFilePath, getConfiguration, instanceCount, log, getErrorInfo } from 'AutoPlay/helpers.js'
+import { getNsDataThroughFile, getFilePath, getConfiguration, instanceCount, log, getErrorInfo } from '/AutoPlay/helpers.js'
 
 const argsSchema = [
     ['spawn-delay', 50], // Delay to allow time for `installBackdoor` to start running before a we connect back to 'home' and optionally start backdooring the next server
@@ -36,11 +36,11 @@ export async function main(ns) {
         // Get the required hacking level of each server
         const dictRequiredHackingLevels = await getNsDataThroughFile(ns,
             `Object.fromEntries(ns.args.map(server => [server, ns.getServerRequiredHackingLevel(server)]))`,
-            'AutoPlay/Temp/getServerRequiredHackingLevel-all.txt', servers);
+            '/AutoPlay/Temp/getServerRequiredHackingLevel-all.txt', servers);
         // Get the root status for each server
         const dictRootAccess = await getNsDataThroughFile(ns,
             `Object.fromEntries(ns.args.map(server => [server, ns.hasRootAccess(server)]))`,
-            'AutoPlay/Temp/hasRootAccess-all.txt', servers);
+            '/AutoPlay/Temp/hasRootAccess-all.txt', servers);
 
         // Filter out servers that cannot or should not be hacked / backdoored
         let hackableServers = servers.filter(s => s != "home" && !s.includes("hacknet-") && !s.includes("daemon")) /*or whatever you name your purchased servers*/
@@ -52,7 +52,7 @@ export async function main(ns) {
         // Get the set of servers that do not yet have a backdoor installed
         let toBackdoor = await getNsDataThroughFile(ns,
             `ns.args.filter(server => !ns.getServer(server).backdoorInstalled)`,
-            'AutoPlay/Temp/getServers-where-not-backdoorInstalled.txt', hackableServers);
+            '/AutoPlay/Temp/getServers-where-not-backdoorInstalled.txt', hackableServers);
         let count = toBackdoor.length;
         // Early exit condition if there are no servers left to backdoor
         ns.print(`${count} servers have yet to be backdoored.`);
@@ -74,7 +74,7 @@ export async function main(ns) {
         let scriptPath = getFilePath('AutoPlay/Tasks/backdoor-all-servers.js.backdoor-one.js');
         let serversBeingBackdoored = await getNsDataThroughFile(ns,
             'ns.ps().filter(script => script.filename == ns.args[0]).map(script => script.args[0])',
-            'AutoPlay/Temp/servers-being-backdoored.txt', [scriptPath]);
+            '/AutoPlay/Temp/servers-being-backdoored.txt', [scriptPath]);
 
         for (const server of toBackdoor) {
             if (serversBeingBackdoored.includes(server)) {
@@ -85,7 +85,7 @@ export async function main(ns) {
             // If we're running low on home ram, don't spawn any more backdoor scripts
             const homeFreeRam = await getNsDataThroughFile(ns,
                 'ns.getServerMaxRam(ns.args[0]) - ns.getServerUsedRam(ns.args[0])',
-                'AutoPlay/Temp/getServerFreeRam.txt', ["home"]);
+                '/AutoPlay/Temp/getServerFreeRam.txt', ["home"]);
             if (homeFreeRam < options['reserved-home-ram'])
                 return log(ns, `WARNING: Home is low on RAM, will skip backdooring remaining servers.`);
 
@@ -93,7 +93,7 @@ export async function main(ns) {
             notAtHome = true; // Set a flag to get us back home if we encounter an error
             const success = await getNsDataThroughFile(ns,
                 'ns.args.reduce((success, hop) => success && ns.singularity.connect(hop), true)',
-                'AutoPlay/Temp/singularity-connect-hop-to-server.txt', routes[server]);
+                '/AutoPlay/Temp/singularity-connect-hop-to-server.txt', routes[server]);
             if (!success)
                 log(ns, `ERROR: Failed to hop to server ${server}. Backdoor probably won't work...`, true, 'error');
             if (server === "w0r1d_d43m0n") {

@@ -1,7 +1,7 @@
 import {
     log, getConfiguration, getFilePath, runCommand, waitForProcessToComplete, getNsDataThroughFile,
     getActiveSourceFiles, getStockSymbols
-} from 'AutoPlay/helpers.js'
+} from '/AutoPlay/helpers.js'
 
 const argsSchema = [
     ['install-augmentations', false], // By default, augs will only be purchased. Set this flag to install (a.k.a reset)
@@ -39,7 +39,7 @@ export async function main(ns) {
 
     // Kill every script except this one, since it can interfere with out spending
     let pid = await runCommand(ns, `ns.ps().filter(s => s.filename != ns.args[0]).forEach(s => ns.kill(s.pid));`,
-        'AutoPlay/Temp/kill-everything-but.js', [ns.getScriptName()]);
+        '/AutoPlay/Temp/kill-everything-but.js', [ns.getScriptName()]);
     await waitForProcessToComplete(ns, pid, true); // Wait for the script to shut down, indicating it has shut down other scripts
 
     // Stop the current action so that we're no longer spending money (if training) and can collect rep earned (if working)
@@ -57,7 +57,7 @@ export async function main(ns) {
     if (hasTixApiAccess) {
         const stkSymbols = await getStockSymbols(ns);
         const countOwnedStocks = async () => await getNsDataThroughFile(ns, `ns.args.map(sym => ns.stock.getPosition(sym))` +
-            `.reduce((t, stk) => t + (stk[0] + stk[2] > 0 ? 1 : 0), 0)`, 'AutoPlay/Temp/owned-stocks.txt', stkSymbols);
+            `.reduce((t, stk) => t + (stk[0] + stk[2] > 0 ? 1 : 0), 0)`, '/AutoPlay/Temp/owned-stocks.txt', stkSymbols);
         let ownedStocks;
         do {
             log(ns, `INFO: Waiting for ${ownedStocks} owned stocks to be sold...`, false, 'info');
@@ -111,8 +111,8 @@ export async function main(ns) {
 
     // If we are not slated to install any augmentations, ABORT
     // Get owned + purchased augmentations, then installed augmentations. Ensure there's a difference
-    let purchasedAugmentations = await getNsDataThroughFile(ns, 'ns.singularity.getOwnedAugmentations(true)', 'AutoPlay/Temp/player-augs-purchased.txt');
-    let installedAugmentations = await getNsDataThroughFile(ns, 'ns.singularity.getOwnedAugmentations()', 'AutoPlay/Temp/player-augs-installed.txt');
+    let purchasedAugmentations = await getNsDataThroughFile(ns, 'ns.singularity.getOwnedAugmentations(true)', '/AutoPlay/Temp/player-augs-purchased.txt');
+    let installedAugmentations = await getNsDataThroughFile(ns, 'ns.singularity.getOwnedAugmentations()', '/AutoPlay/Temp/player-augs-installed.txt');
     let noAugsToInstall = purchasedAugmentations.length == installedAugmentations.length;
     if (noAugsToInstall && !options['allow-soft-reset'])
         return log(ns, `ERROR: See above AutoPlay/faction-manager.js logs - there are no new purchased augs. ` +
@@ -146,13 +146,13 @@ export async function main(ns) {
 
     // STEP 8: Buy whatever home CPU upgrades we can afford
     log(ns, 'Try Upgrade Home Cores...', true, 'info');
-    pid = await runCommand(ns, `while(ns.singularity.upgradeHomeCores()); { await ns.sleep(10); }`, 'AutoPlay/Temp/upgrade-home-ram.js');
+    pid = await runCommand(ns, `while(ns.singularity.upgradeHomeCores()); { await ns.sleep(10); }`, '/AutoPlay/Temp/upgrade-home-ram.js');
     await waitForProcessToComplete(ns, pid, true); // Wait for the script to shut down, indicating it has bought all it can.
 
     // STEP 9: Join every faction we've been invited to (gives a little INT XP)
     let invites = await getNsDataThroughFile(ns, 'ns.singularity.checkFactionInvitations()');
     if (invites.length > 0) {
-        pid = await runCommand(ns, 'ns.args.forEach(f => ns.singularity.joinFaction(f))', 'AutoPlay/Temp/join-factions.js', invites);
+        pid = await runCommand(ns, 'ns.args.forEach(f => ns.singularity.joinFaction(f))', '/AutoPlay/Temp/join-factions.js', invites);
         await waitForProcessToComplete(ns, pid, true);
     }
 

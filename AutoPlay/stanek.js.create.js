@@ -1,4 +1,4 @@
-import { log, getConfiguration, getNsDataThroughFile } from 'AutoPlay/helpers.js'
+import { log, getConfiguration, getNsDataThroughFile } from '/AutoPlay/helpers.js'
 
 const argsSchema = [
     ['clear', false], // If set to true, will clear whatever layout is already there and create a new one
@@ -33,7 +33,7 @@ export async function main(ns) {
 
     // Clear any prior layout if enabled
     if (options['clear']) {
-        await getNsDataThroughFile(ns, 'ns.stanek.clearGift() || true', 'AutoPlay/Temp/stanek-clearGift.txt');
+        await getNsDataThroughFile(ns, 'ns.stanek.clearGift() || true', '/AutoPlay/Temp/stanek-clearGift.txt');
         log(ns, 'Cleared any existing stanek layout.');
     }
 
@@ -52,7 +52,7 @@ export async function main(ns) {
     log(ns, `Placing ${bestLayout.fragments.length} fragments:\n` + JSON.stringify(bestLayout.fragments));
     const result = await getNsDataThroughFile(ns,
         'JSON.parse(ns.args[0]).reduce((t, f) => ns.stanek.placeFragment(f.x, f.y, f.rotation, f.id) && t, true)',
-        'AutoPlay/Temp/stanek-placeFragments.txt', [JSON.stringify(bestLayout.fragments)]);
+        '/AutoPlay/Temp/stanek-placeFragments.txt', [JSON.stringify(bestLayout.fragments)]);
     if (result)
         log(ns, `SUCCESS: Placed ${bestLayout.fragments.length} Stanek fragments.`, true, 'success');
     else

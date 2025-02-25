@@ -1,4 +1,4 @@
-import { log, disableLogs, getConfiguration, instanceCount, getNsDataThroughFile, getFilePath, getActiveSourceFiles, formatNumberShort, formatDuration } from 'AutoPlay/helpers.js'
+import { log, disableLogs, getConfiguration, instanceCount, getNsDataThroughFile, getFilePath, getActiveSourceFiles, formatNumberShort, formatDuration } from '/AutoPlay/helpers.js'
 
 const cityNames = ["Sector-12", "Aevum", "Volhaven", "Chongqing", "New Tokyo", "Ishima"];
 const antiChaosOperation = "Stealth Retirement Operation"; // Note: Faster and more effective than Diplomacy at reducing city chaos
@@ -90,7 +90,7 @@ const getBBInfo = async (ns, strFunction, ...args) =>
 // The strFunction should contain a '%' sign indicating where the elements from the list should be mapped to a single call.
 const getBBDict = async (ns, strFunction, elements, ...args) => await getNsDataThroughFile(ns,
     `Object.fromEntries(JSON.parse(ns.args[0]).map(e => [e, ns.bladeburner.${strFunction.replace('%', 'e')}]))`,
-    `AutoPlay/Temp/bladeburner-${strFunction.split('(')[0]}-all.txt`, [JSON.stringify(elements), ...args]);
+    `/AutoPlay/Temp/bladeburner-${strFunction.split('(')[0]}-all.txt`, [JSON.stringify(elements), ...args]);
 // Helper for dual-parameter bladeburner functions e.g. getActionCountRemaining(actionType, action)
 const getBBDictByActionType = async (ns, strFunction, actionType, elements) =>
     await getBBDict(ns, `${strFunction}(ns.args[1], %)`, elements, actionType);
@@ -113,7 +113,7 @@ async function gatherBladeburnerInfo(ns) {
     maxRankNeeded = blackOpsRanks[remainingBlackOpsNames[remainingBlackOpsNames.length - 1]];
     // Check if we have the aug that lets us do bladeburner while otherwise busy
     haveSimulacrum = !(4 in ownedSourceFiles) ? true : // If player doesn't have SF4, we cannot check, so hope for the best.
-        await getNsDataThroughFile(ns, `ns.singularity.getOwnedAugmentations().includes("${simulacrumAugName}")`, 'AutoPlay/Temp/bladeburner-hasSimulacrum.txt');
+        await getNsDataThroughFile(ns, `ns.singularity.getOwnedAugmentations().includes("${simulacrumAugName}")`, '/AutoPlay/Temp/bladeburner-hasSimulacrum.txt');
     // Initialize some flags that may change over time
     lastAssignedTask = null;
     lastBlackOpComplete = false; // Flag will track whether we've notified the user that the last black-op is ready

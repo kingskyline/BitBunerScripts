@@ -1,7 +1,7 @@
 import {
     log, disableLogs, instanceCount, getConfiguration, getNsDataThroughFile, getActiveSourceFiles,
     getStocksValue, formatNumberShort, formatMoney, formatRam, getFilePath
-} from 'AutoPlay/helpers.js'
+} from '/AutoPlay/helpers.js'
 
 const argsSchema = [
     ['show-peoplekilled', false],
@@ -140,7 +140,7 @@ async function getHudData(ns, bitNode, dictSourceFiles, options) {
         const val1 = ["Hashes"];
         const val2 = [" "]; // Blank line placeholder for when hashes are being liquidated
         if (9 in dictSourceFiles || 9 == bitNode) { // Section not relevant if you don't have access to hacknet servers
-            const hashes = await getNsDataThroughFile(ns, '[ns.hacknet.numHashes(), ns.hacknet.hashCapacity()]', 'AutoPlay/Temp/hash-stats.txt')
+            const hashes = await getNsDataThroughFile(ns, '[ns.hacknet.numHashes(), ns.hacknet.hashCapacity()]', '/AutoPlay/Temp/hash-stats.txt')
             if (hashes[1] > 0) {
                 val1.push(true, `${formatNumberShort(hashes[0], 3, 1)}/${formatNumberShort(hashes[1], 3, 1)}`,
                     `Current Hashes ${hashes[0].toLocaleString('en')} / Current Hash Capacity ${hashes[1].toLocaleString('en')}`)
@@ -148,7 +148,7 @@ async function getHudData(ns, bitNode, dictSourceFiles, options) {
                 const spendHashesScript = getFilePath('AutoPlay/spend-hacknet-hashes.js');
                 const liquidatingHashes = await getNsDataThroughFile(ns,
                     `ns.ps('home').filter(p => p.filename == ns.args[0] && (p.args.includes('--liquidate') || p.args.includes('-l')))`,
-                    'AutoPlay/Temp/hash-liquidation-scripts.txt', [spendHashesScript]);
+                    '/AutoPlay/Temp/hash-liquidation-scripts.txt', [spendHashesScript]);
                 if (liquidatingHashes.length > 0)
                     val2.push(true, "Liquidating", `You have a script running that is selling hashes as quickly as possible ` +
                         `(PID ${liquidatingHashes[0].pid}: ${spendHashesScript} ${liquidatingHashes[0].args.join(' ')})`);
@@ -330,14 +330,14 @@ function formatSixSigFigs(value, minDecimalPlaces = 0, maxDecimalPlaces = 0) {
 /** @param {NS} ns
  *  @returns {Promise<GangGenInfo|boolean>} Gang information, if we're in a gang, or False */
 async function getGangInfo(ns) {
-    return await getNsDataThroughFile(ns, 'ns.gang.inGang() ? ns.gang.getGangInformation() : false', 'AutoPlay/Temp/gang-stats.txt')
+    return await getNsDataThroughFile(ns, 'ns.gang.inGang() ? ns.gang.getGangInformation() : false', '/AutoPlay/Temp/gang-stats.txt')
 }
 
 /** @param {NS} ns
  * @returns {Promise<Server[]>} **/
 async function getAllServersInfo(ns) {
     const serverNames = await getNsDataThroughFile(ns, 'scanAllServers(ns)');
-    return await getNsDataThroughFile(ns, 'ns.args.map(ns.getServer)', 'AutoPlay/Temp/getServers.txt', serverNames);
+    return await getNsDataThroughFile(ns, 'ns.args.map(ns.getServer)', '/AutoPlay/Temp/getServers.txt', serverNames);
 }
 
 /** Inject the CSS that controls how custom HUD elements are displayed. */

@@ -1,4 +1,4 @@
-import { instanceCount, getFilePath, getNsDataThroughFile, disableLogs, log } from 'AutoPlay/helpers.js'
+import { instanceCount, getFilePath, getNsDataThroughFile, disableLogs, log } from '/AutoPlay/helpers.js'
 const scriptSolver = getFilePath("AutoPlay/Tasks/contractor.js.solver.js");
 
 /** @param {NS} ns **/
@@ -23,8 +23,8 @@ export async function main(ns) {
     const serializedContractDb = JSON.stringify(contractsDb);
     let contractsDictCommand = async (command, tempName) => await getNsDataThroughFile(ns,
         `Object.fromEntries(JSON.parse(ns.args[0]).map(c => [c.contract, ${command}]))`, tempName, [serializedContractDb]);
-    let dictContractTypes = await contractsDictCommand('ns.codingcontract.getContractType(c.contract, c.hostname)', 'AutoPlay/Temp/contract-types.txt');
-    let dictContractDataStrings = await contractsDictCommand('JSON.stringify(ns.codingcontract.getData(c.contract, c.hostname), jsonReplacer)', 'AutoPlay/Temp/contract-data-stringified.txt');
+    let dictContractTypes = await contractsDictCommand('ns.codingcontract.getContractType(c.contract, c.hostname)', '/AutoPlay/Temp/contract-types.txt');
+    let dictContractDataStrings = await contractsDictCommand('JSON.stringify(ns.codingcontract.getData(c.contract, c.hostname), jsonReplacer)', '/AutoPlay/Temp/contract-data-stringified.txt');
     contractsDb.forEach(c => c.type = dictContractTypes[c.contract]);
     contractsDb.forEach(c => c.dataJson = dictContractDataStrings[c.contract]);
 

@@ -1,4 +1,4 @@
-import { runCommand } from 'AutoPlay/helpers.js'
+import { runCommand } from '/AutoPlay/helpers.js'
 
 export function autocomplete(data, args) {
     return [

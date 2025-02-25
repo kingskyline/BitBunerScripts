@@ -1,7 +1,7 @@
 import {
     log, getConfiguration, getFilePath, waitForProcessToComplete,
     runCommand, getNsDataThroughFile, formatMoney, getErrorInfo, tail
-} from 'AutoPlay/helpers.js'
+} from '/AutoPlay/helpers.js'
 
 // Note to self: This script doesn't use ram-dodging in the inner loop, because we want to
 // delete all temp files and avoid creating more so that the game saves / reloads faster.
@@ -422,7 +422,7 @@ async function reload(ns) {
 async function killAllOtherScripts(ns, removeRemoteFiles) {
     // Kill processes on home (except this one)
     let pid = await runCommand(ns, `ns.ps().filter(s => s.filename != ns.args[0]).forEach(s => ns.kill(s.pid));`,
-        'AutoPlay/Temp/kill-everything-but.js', [ns.getScriptName()]);
+        '/AutoPlay/Temp/kill-everything-but.js', [ns.getScriptName()]);
     await waitForProcessToComplete(ns, pid);
     log(ns, `INFO: Killed other scripts running on home...`, true);
 
@@ -430,14 +430,14 @@ async function killAllOtherScripts(ns, removeRemoteFiles) {
     const allServers = await getNsDataThroughFile(ns, 'scanAllServers(ns)');
     const serversExceptHome = allServers.filter(s => s != "home");
     pid = await runCommand(ns, 'ns.args.forEach(host => ns.killall(host))',
-        'AutoPlay/Temp/kill-all-scripts-on-servers.js', serversExceptHome);
+        '/AutoPlay/Temp/kill-all-scripts-on-servers.js', serversExceptHome);
     await waitForProcessToComplete(ns, pid);
     log(ns, 'INFO: Killed all scripts running on other hosts...', true);
 
     // If enabled, remove files on all other servers
     if (removeRemoteFiles) {
         pid = await runCommand(ns, 'ns.args.forEach(host => ns.ls(host).forEach(file => ns.rm(file, host)))',
-            'AutoPlay/Temp/delete-files-on-servers.js', serversExceptHome)
+            '/AutoPlay/Temp/delete-files-on-servers.js', serversExceptHome)
         await waitForProcessToComplete(ns, pid);
         log(ns, 'INFO: Removed all files on other hosts...', true)
     }

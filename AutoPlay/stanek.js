@@ -2,10 +2,10 @@ import {
     log, disableLogs, getFilePath, getConfiguration, formatNumberShort, formatRam,
     getNsDataThroughFile, waitForProcessToComplete, getActiveSourceFiles, instanceCount, unEscapeArrayArgs,
     tail
-} from 'AutoPlay/helpers.js'
+} from '/AutoPlay/helpers.js'
 
 // Name of the external script that will be created and called to generate charges
-const chargeScript = "AutoPlay/Temp/stanek.js.charge.js";
+const chargeScript = "/AutoPlay/Temp/stanek.js.charge.js";
 let awakeningRep = 1E6, serenityRep = 100E6; // Base reputation cost - can be scaled by bitnode multipliers
 
 const argsSchema = [
@@ -80,13 +80,13 @@ export async function main(ns) {
     if (sf4Level == 0) {
         log(ns, `INFO: SF4 required to get owned faction rep and augmentation info. Ignoring the --reputation-threshold setting.`);
     } else {
-        const ownedAugmentations = await getNsDataThroughFile(ns, `ns.singularity.getOwnedAugmentations(true)`, 'AutoPlay/Temp/player-augs-purchased.txt');
+        const ownedAugmentations = await getNsDataThroughFile(ns, `ns.singularity.getOwnedAugmentations(true)`, '/AutoPlay/Temp/player-augs-purchased.txt');
         const [strAwakening, strSerenity] = ["Stanek's Gift - Awakening", "Stanek's Gift - Serenity"];
         const [awakeningOwned, serenityOwned] = [ownedAugmentations.includes(strAwakening), ownedAugmentations.includes(strSerenity)];
         if (!awakeningOwned || !serenityOwned) {
             [awakeningRep, serenityRep] = await getNsDataThroughFile(ns,
                 `[${[strAwakening, strSerenity].map(a => `ns.singularity.getAugmentationRepReq(\"${a}\")`)}]`,
-                'AutoPlay/Temp/stanek-aug-rep-reqs.txt');
+                '/AutoPlay/Temp/stanek-aug-rep-reqs.txt');
             log(ns, `INFO: Stanek Augmentations Rep Requirements are Awakening: ${formatNumberShort(awakeningRep)}, ` +
                 `Serenity: ${formatNumberShort(serenityRep)} (--reputation-threshold = ${options['reputation-threshold']})`);
         }

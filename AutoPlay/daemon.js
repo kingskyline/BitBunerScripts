@@ -4,7 +4,7 @@ import {
     getNsDataThroughFile_Custom, runCommand_Custom, waitForProcessToComplete_Custom,
     tryGetBitNodeMultipliers_Custom, getActiveSourceFiles_Custom,
     getFnRunViaNsExec, tail, autoRetry, getErrorInfo
-} from 'AutoPlay/helpers.js'
+} from '/AutoPlay/helpers.js'
 
 // AutoPlay/daemon.js has histocially been the central orchestrator of almost every script in the game.
 // Only recently has it been "indentured" to an even higher-level orchestrator: AutoPlay/autopilot.js
@@ -203,7 +203,7 @@ export async function main(ns) {
      * @returns {Promise<boolean[]>} */
     async function filesExist(ns, fileNames, hostname = undefined) {
         return await getNsDataThroughFile(ns, `ns.args.slice(1).map(f => ns.fileExists(f, ns.args[0]))`,
-            'AutoPlay/Temp/files-exist.txt', [hostname ?? daemonHost, ...fileNames])
+            '/AutoPlay/Temp/files-exist.txt', [hostname ?? daemonHost, ...fileNames])
     }
 
     let psCache = (/**@returns{{[serverName: string]: ProcessInfo[];}}*/() => ({}))();
@@ -424,11 +424,11 @@ export async function main(ns) {
             periodicScripts.forEach(tool => tool.runOptions = { temporary: false });
         // HACK TOOLS (run with many threads)
         hackTools = [
-            { name: "/AutoPlay/Remote/weak-target.js", shortName: "weak", threadSpreadingAllowed: true },
-            { name: "/AutoPlay/Remote/grow-target.js", shortName: "grow" }, // Don't want to split because of security hardening after each fire, reducing success chance of next chunk. Also, a minor reduction in gains due to loss of thread count in base money added before exponential growth.
-            { name: "/AutoPlay/Remote/hack-target.js", shortName: "hack" }, // Don't want to split because of security hardening, as above.
-            { name: "/AutoPlay/Remote/manualhack-target.js", shortName: "manualhack" },
-            { name: "/AutoPlay/Remote/share.js", shortName: "share", threadSpreadingAllowed: true },
+            { name: "//AutoPlay/Remote/weak-target.js", shortName: "weak", threadSpreadingAllowed: true },
+            { name: "//AutoPlay/Remote/grow-target.js", shortName: "grow" }, // Don't want to split because of security hardening after each fire, reducing success chance of next chunk. Also, a minor reduction in gains due to loss of thread count in base money added before exponential growth.
+            { name: "//AutoPlay/Remote/hack-target.js", shortName: "hack" }, // Don't want to split because of security hardening, as above.
+            { name: "//AutoPlay/Remote/manualhack-target.js", shortName: "manualhack" },
+            { name: "//AutoPlay/Remote/share.js", shortName: "share", threadSpreadingAllowed: true },
         ];
         hackTools.forEach(tool => tool.ignoreReservedRam = false);
 
@@ -598,7 +598,7 @@ export async function main(ns) {
         if (9 in dictSourceFiles && !options['disable-spend-hashes']) { // See if we have a hacknet, and spending hashes for money isn't disabled
             if (homeServer.getMoney() < options['spend-hashes-for-money-when-under'] // Only if money is below the configured threshold
                 && homeServer.ramAvailable(/*ignoreReservedRam:*/true) >= 5.6) { // Ensure we have spare RAM to run this temp script
-                await runCommand(ns, `0; if(ns.hacknet.spendHashes("Sell for Money")) ns.toast('Sold 4 hashes for \$1M', 'success')`, 'AutoPlay/Temp/sell-hashes-for-money.js');
+                await runCommand(ns, `0; if(ns.hacknet.spendHashes("Sell for Money")) ns.toast('Sold 4 hashes for \$1M', 'success')`, '/AutoPlay/Temp/sell-hashes-for-money.js');
             }
         }
     }
@@ -746,7 +746,7 @@ export async function main(ns) {
                                 `Manip: ${shouldManipulateGrow[s.name] ? "grow" : shouldManipulateHack[s.name] ? "hack" : '(disabled)'}`))
                             .join('\n  ');
                         log(ns, targetsLog);
-                        ns.write("AutoPlay/Temp/targets.txt", targetsLog, "w");
+                        ns.write("/AutoPlay/Temp/targets.txt", targetsLog, "w");
                     }
                 }
                 // Processed servers will be split into various lists for generating a summary at the end
@@ -1006,7 +1006,7 @@ export async function main(ns) {
     // Get a dictionary from retrieving the same infromation for every server name
     async function getServersDict(ns, command) {
         return await getNsDataThroughFile(ns, `Object.fromEntries(ns.args.map(server => [server, ns.${command}(server)]))`,
-            `AutoPlay/Temp/${command}-all.txt`, allHostNames);
+            `/AutoPlay/Temp/${command}-all.txt`, allHostNames);
     }
 
     let dictInitialServerInfos = (/**@returns{{[serverName: string]: globalThis.Server;}}*/() => undefined)();
@@ -1051,7 +1051,7 @@ export async function main(ns) {
         // Get the information about the relative profitability of each server (affects targetting order)
         const pid = await exec(ns, getFilePath('analyze-hack.js'), null, null, '--all', '--silent');
         await waitForProcessToComplete_Custom(ns, getHomeProcIsAlive(ns), pid);
-        const analyzeHackResult = dictServerProfitInfo = ns.read('AutoPlay/Temp/analyze-hack.txt');
+        const analyzeHackResult = dictServerProfitInfo = ns.read('/AutoPlay/Temp/analyze-hack.txt');
         if (!analyzeHackResult)
             log(ns, "WARNING: analyze-hack info unavailable. Will use fallback approach.");
         else
@@ -1658,7 +1658,7 @@ export async function main(ns) {
                     missing_scripts.push(getFilePath('AutoPlay/Tasks/contractor.js.solver.js'), getFilePath('AutoPlay/Tasks/run-with-delay.js'))
                 if (verbose)
                     log(ns, `Copying ${tool.name} and ${missing_scripts.length - 1} dependencies from ${daemonHost} to ${targetServer.name} so that it can be executed remotely.`);
-                await getNsDataThroughFile(ns, `ns.scp(ns.args.slice(2), ns.args[0], ns.args[1])`, 'AutoPlay/Temp/copy-scripts.txt', [targetServer.name, daemonHost, ...missing_scripts])
+                await getNsDataThroughFile(ns, `ns.scp(ns.args.slice(2), ns.args[0], ns.args[1])`, '/AutoPlay/Temp/copy-scripts.txt', [targetServer.name, daemonHost, ...missing_scripts])
                 missing_scripts.forEach(s => targetServer._files[s] = true); // Make note that these files now exist on the target server
                 //await ns.sleep(5); // Workaround for Bitburner bug https://github.com/danielyxie/bitburner/issues/1714 - newly created/copied files sometimes need a bit more time, even if awaited
             }
@@ -2023,11 +2023,11 @@ export async function main(ns) {
     /** @param {NS} ns **/
     async function updateStockPositions(ns) {
         if (!haveTixApi) return; // No point in attempting anything here if the user doesn't have stock market access yet.
-        let updatedPositions = ns.read(`AutoPlay/Temp/stock-probabilities.txt`); // Should be a dict of stock symbol -> prob left by the /stocks/stockmaster.js script.
+        let updatedPositions = ns.read(`/AutoPlay/Temp/stock-probabilities.txt`); // Should be a dict of stock symbol -> prob left by the /stocks/stockmaster.js script.
         if (!updatedPositions) {
             failedStockUpdates++;
             if (failedStockUpdates % 60 == 10) // Periodically warn if stockmaster is not running (or not generating the required file)
-                log(ns, `WARNING: The file "AutoPlay/Temp/stock-probabilities.txt" has been missing or empty the last ${failedStockUpdates} attempts.` +
+                log(ns, `WARNING: The file "/AutoPlay/Temp/stock-probabilities.txt" has been missing or empty the last ${failedStockUpdates} attempts.` +
                     `\nEnsure /stocks/stockmaster.js is running, or turn off the --stock-manipulation flag when running.`, false, 'warning');
             return
         }
@@ -2083,7 +2083,7 @@ export async function main(ns) {
     /** Helper to kill a list of process ids
      * @param {NS} ns **/
     async function killProcessIds(ns, processIds) {
-        return await runCommand(ns, `ns.args.forEach(ns.kill)`, 'AutoPlay/Temp/kill-pids.js', processIds);
+        return await runCommand(ns, `ns.args.forEach(ns.kill)`, '/AutoPlay/Temp/kill-pids.js', processIds);
     }
 
     /** @param {Server} server **/
@@ -2237,7 +2237,7 @@ export async function main(ns) {
     /** A custom AutoPlay/daemon.js wrapper around the helpers.js ram-dodging function which uses exec rather than run
      * @param {NS} ns The nestcript instance passed to your script's main entry point
      * @param {string} command The ns command that should be invoked to get the desired data (e.g. "ns.getServer('home')" )
-     * @param {string?} fName (default "AutoPlay/Temp/{command-name}.txt") The name of the file to which data will be written to disk by a temporary process
+     * @param {string?} fName (default "/AutoPlay/Temp/{command-name}.txt") The name of the file to which data will be written to disk by a temporary process
      * @param {any[]?} args args to be passed in as arguments to command being run as a new script.
      * @param {boolean?} verbose (default false) If set to true, pid and result of command are logged. */
     async function getNsDataThroughFile(ns, command, fName, args = [], verbose, maxRetries, retryDelayMs, silent) {
@@ -2318,7 +2318,7 @@ export async function main(ns) {
         allTools.forEach(script => script.name = getFilePath(script.name));
         // Get the cost (RAM) of each tool from the API
         let toolCosts = await getNsDataThroughFile(ns, `Object.fromEntries(ns.args.map(s => [s, ns.getScriptRam(s, 'home')]))`,
-            'AutoPlay/Temp/script-costs.txt', allTools.map(t => t.name));
+            '/AutoPlay/Temp/script-costs.txt', allTools.map(t => t.name));
         // Construct a Tool class instance for each configured item
         const toolsTyped = allTools.map(toolConfig => new Tool(toolConfig, toolCosts[toolConfig.name]));
         toolsByShortName = Object.fromEntries(toolsTyped.map(tool => [tool.shortName || hashToolDefinition(tool), tool]));

@@ -1,4 +1,4 @@
-import { log, waitForProcessToComplete, formatDuration, getFilePath } from 'AutoPlay/helpers.js'
+import { log, waitForProcessToComplete, formatDuration, getFilePath } from '/AutoPlay/helpers.js'
 
 /** @param {NS} ns */
 export async function main(ns) {
@@ -20,7 +20,7 @@ export async function main(ns) {
             `or just edit out this check if you're sure you want to proceed.`, true);
     await waitForProcessToComplete(ns, ns.run(getFilePath('AutoPlay/cleanup.js')));
     // Prepare a very small script that will accept all invites in a tight loop.
-    const tempFile = 'AutoPlay/Temp/AutoPlay/farm-intelligence.js';
+    const tempFile = '/AutoPlay/Temp/AutoPlay/farm-intelligence.js';
     await ns.write(tempFile, `export async function main(ns) {
         ns.disableLog('ALL');
         ${JSON.stringify(ns.singularity.checkFactionInvitations())}.forEach(f => ns.singularity.joinFaction(f));

@@ -1,4 +1,4 @@
-import { log, getConfiguration, instanceCount, disableLogs, getActiveSourceFiles, getNsDataThroughFile, runCommand, formatMoney, formatDuration } from 'AutoPlay/helpers.js'
+import { log, getConfiguration, instanceCount, disableLogs, getActiveSourceFiles, getNsDataThroughFile, runCommand, formatMoney, formatDuration } from '/AutoPlay/helpers.js'
 
 const argsSchema = [
     ['min-shock-recovery', 97], // Minimum shock recovery before attempting to train or do crime (Set to 100 to disable, 0 to recover fully)
@@ -30,7 +30,7 @@ const argsSchema = [
 const interval = 1000; // Update (tick) this often to check on sleeves and recompute their ideal task
 const rerollTime = 61000; // How often we re-roll for each sleeve's chance to be randomly placed on shock recovery
 const statusUpdateInterval = 10 * 60 * 1000; // Log sleeve status this often, even if their task hasn't changed
-const trainingReserveFile = 'AutoPlay/Temp/sleeves-training-reserve.txt';
+const trainingReserveFile = '/AutoPlay/Temp/sleeves-training-reserve.txt';
 const works = ['security', 'field', 'hacking']; // When doing faction work, we prioritize physical work since sleeves tend towards having those stats be highest
 const trainStats = ['strength', 'defense', 'dexterity', 'agility'];
 const trainSmarts = ['hacking', 'charisma'];
@@ -98,7 +98,7 @@ async function manageSleeveAugs(ns, i, budget) {
         let strAction = `Purchase ${batchCount}/${availableAugs[i].length} augmentations for sleeve ${i} at total cost of ${formatMoney(batchCost)}`;
         let toPurchase = availableAugs[i].splice(0, batchCount);
         if (await getNsDataThroughFile(ns, `ns.args.slice(1).reduce((s, aug) => s && ns.sleeve.purchaseSleeveAug(ns.args[0], aug), true)`,
-            'AutoPlay/Temp/sleeve-purchase.txt', [i, ...toPurchase.map(a => a.name)])) {
+            '/AutoPlay/Temp/sleeve-purchase.txt', [i, ...toPurchase.map(a => a.name)])) {
             log(ns, `SUCCESS: ${strAction}`, true, 'success');
             [lastSleeveHp[i], lastSleeveShock[i]] = [undefined, undefined]; // Sleeve stats are reset on installation of augs, so forget saved health info
         } else log(ns, `ERROR: Failed to ${strAction}`, true, 'error');
@@ -125,7 +125,7 @@ async function getCurrentWorkInfo(ns) {
  * @returns {Promise<SleevePerson[]>} */
 async function getAllSleeves(ns, numSleeves) {
     return await getNsDataThroughFile(ns, `ns.args.map(i => ns.sleeve.getSleeve(i))`,
-        `AutoPlay/Temp/sleeve-getSleeve-all.txt`, [...Array(numSleeves).keys()]);
+        `/AutoPlay/Temp/sleeve-getSleeve-all.txt`, [...Array(numSleeves).keys()]);
 }
 
 /** @param {NS} ns
@@ -153,10 +153,10 @@ async function mainLoop(ns) {
             (promptedForTrainingBudget ? ns.read(trainingReserveFile) : undefined) || globalReserve);
     // If any sleeve is training at the gym, see if we can purchase a gym upgrade to help them
     if (canTrain && task.some(t => t?.startsWith("train")) && !options['disable-spending-hashes-for-gym-upgrades'])
-        if (await getNsDataThroughFile(ns, 'ns.hacknet.spendHashes("Improve Gym Training")', 'AutoPlay/Temp/spend-hashes-on-gym.txt'))
+        if (await getNsDataThroughFile(ns, 'ns.hacknet.spendHashes("Improve Gym Training")', '/AutoPlay/Temp/spend-hashes-on-gym.txt'))
             log(ns, `SUCCESS: Bought "Improve Gym Training" to speed up Sleeve training.`, false, 'success');
     if (canTrain && task.some(t => t?.startsWith("study")) && !options['disable-spending-hashes-for-study-upgrades'])
-        if (await getNsDataThroughFile(ns, 'ns.hacknet.spendHashes("Improve Studying")', 'AutoPlay/Temp/spend-hashes-on-study.txt'))
+        if (await getNsDataThroughFile(ns, 'ns.hacknet.spendHashes("Improve Studying")', '/AutoPlay/Temp/spend-hashes-on-study.txt'))
             log(ns, `SUCCESS: Bought "Improve Studying" to speed up Sleeve studying.`, false, 'success');
     if (playerInBladeburner && (7 in ownedSourceFiles)) {
         const bladeburnerCity = await getNsDataThroughFile(ns, `ns.bladeburner.getCity()`);
@@ -164,10 +164,10 @@ async function mainLoop(ns) {
         bladeburnerContractChances = await getNsDataThroughFile(ns,
             // There is currently no way to get sleeve chance, so assume it is the same as player chance for now. (EDIT: This is a terrible assumption)
             'Object.fromEntries(ns.args.map(c => [c, ns.bladeburner.getActionEstimatedSuccessChance("contract", c)[0]]))',
-            'AutoPlay/Temp/sleeve-bladeburner-success-chances.txt', sleeveBbContractNames);
+            '/AutoPlay/Temp/sleeve-bladeburner-success-chances.txt', sleeveBbContractNames);
         bladeburnerContractCounts = await getNsDataThroughFile(ns,
             'Object.fromEntries(ns.args.map(c => [c, ns.bladeburner.getActionCountRemaining("contract", c)]))',
-            'AutoPlay/Temp/sleeve-bladeburner-contract-counts.txt', sleeveBbContractNames);
+            '/AutoPlay/Temp/sleeve-bladeburner-contract-counts.txt', sleeveBbContractNames);
     } else
         bladeburnerCityChaos = 0, bladeburnerContractChances = {}, bladeburnerContractCounts = {};
 
@@ -368,7 +368,7 @@ async function crimeTask(ns, crime, i, sleeve, reason) {
 async function setSleeveTask(ns, i, designatedTask, command, args) {
     let strAction = `Set sleeve ${i} to ${designatedTask}`;
     try { // Assigning a task can throw an error rather than simply returning false. We must suppress this
-        if (await getNsDataThroughFile(ns, command, `AutoPlay/Temp/sleeve-${command.slice(10, command.indexOf("("))}.txt`, args)) {
+        if (await getNsDataThroughFile(ns, command, `/AutoPlay/Temp/sleeve-${command.slice(10, command.indexOf("("))}.txt`, args)) {
             task[i] = designatedTask;
             log(ns, `SUCCESS: ${strAction}`);
             return true;
@@ -403,7 +403,7 @@ async function promptForTrainingBudget(ns) {
     await ns.write(trainingReserveFile, '', "w");
     if (options['training-reserve'] === null && !options['disable-training'])
         await runCommand(ns, `let ans = await ns.prompt("Do you want to let sleeves put you in debt while they train?"); \n` +
-            `await ns.write("${trainingReserveFile}", ans ? '-1E100' : '0', "w")`, 'AutoPlay/Temp/sleeves-training-reserve-prompt.js');
+            `await ns.write("${trainingReserveFile}", ans ? '-1E100' : '0', "w")`, '/AutoPlay/Temp/sleeves-training-reserve-prompt.js');
 }
 
 /** @param {NS} ns

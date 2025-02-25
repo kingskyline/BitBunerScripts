@@ -1,7 +1,7 @@
 import {
     log, getConfiguration, instanceCount, formatNumberShort, formatMoney,
     getNsDataThroughFile, getActiveSourceFiles, tryGetBitNodeMultipliers, getStocksValue
-} from 'AutoPlay/helpers.js'
+} from '/AutoPlay/helpers.js'
 
 // PLAYER CONFIGURATION CONSTANTS
 // This acts as a list of default "easy" factions to always show even if the user has --hide-locked-factions
@@ -14,7 +14,7 @@ const default_desired_augs = ["CashRoot Starter Kit"] // By default, mark these 
 // If not in a gang, and we are nearing unlocking gangs (54K Karma) we will attempt to join any/all of these factions
 const potentialGangFactions = ["Slum Snakes", "Tetrads", "The Black Hand", "The Syndicate", "The Dark Army", "Speakers for the Dead"];
 const default_hidden_stats = ['bladeburner', 'hacknet']; // Hide from the summary table by default because they clearly all come from one faction.
-const output_file = "AutoPlay/Temp/affordable-augs.txt"; // Temp file produced for AutoPlay/autopilot.js to relay information about current owned & affordable augs.
+const output_file = "/AutoPlay/Temp/affordable-augs.txt"; // Temp file produced for AutoPlay/autopilot.js to relay information about current owned & affordable augs.
 const staneksGift = "Stanek's Gift - Genesis";
 const factionsWithoutDonation = ["Bladeburners", "Church of the Machine God", "Shadows of Anarchy"]; // Not allowed to donate to these factions for rep
 
@@ -146,9 +146,9 @@ export async function main(ns) {
     joinedFactions = ignorePlayerData ? [] : playerData.factions;
     log(ns, 'In factions: ' + joinedFactions);
     // Get owned augmentations (whether they've been installed or not). Ignore strNF because you can always buy more.
-    ownedAugmentations = await getNsDataThroughFile(ns, 'ns.singularity.getOwnedAugmentations(true)', 'AutoPlay/Temp/player-augs-purchased.txt');
+    ownedAugmentations = await getNsDataThroughFile(ns, 'ns.singularity.getOwnedAugmentations(true)', '/AutoPlay/Temp/player-augs-purchased.txt');
     const installedAugmentations = (/**@returns {string[]}*/() => null)() ??
-        await getNsDataThroughFile(ns, 'ns.singularity.getOwnedAugmentations()', 'AutoPlay/Temp/player-augs-installed.txt');
+        await getNsDataThroughFile(ns, 'ns.singularity.getOwnedAugmentations()', '/AutoPlay/Temp/player-augs-installed.txt');
     numAugsAwaitingInstall = ownedAugmentations.length - installedAugmentations.length;
     if (options['neuroflux-disabled']) omitAugs.push(strNF);
     simulatedOwnedAugmentations = ignorePlayerData ? [] : ownedAugmentations.filter(a => a != strNF);
@@ -258,7 +258,7 @@ async function getPlayerInfo(ns) {
 /** @param {NS} ns
  *  @returns {Promise<GangGenInfo|boolean>} Gang information, if we're in a gang, or False */
 async function getGangInfo(ns) {
-    return await getNsDataThroughFile(ns, 'ns.gang.inGang() ? ns.gang.getGangInformation() : false', 'AutoPlay/Temp/gang-stats.txt')
+    return await getNsDataThroughFile(ns, 'ns.gang.inGang() ? ns.gang.getGangInformation() : false', '/AutoPlay/Temp/gang-stats.txt')
 }
 
 // Helper function to make multi names shorter for display in a table
@@ -299,7 +299,7 @@ const dictCommand = (command) => `Object.fromEntries(ns.args.map(o => [o, ${comm
  * @returns {Promise<{[k: string]: any}>} */
 async function getSingularityDict(ns, command, listItems) {
     return await getNsDataThroughFile(ns, dictCommand(`ns.singularity.${command}(o)`),
-        `AutoPlay/Temp/singularity-${command}-all.txt`, listItems);
+        `/AutoPlay/Temp/singularity-${command}-all.txt`, listItems);
 }
 
 /** @param {NS} ns
@@ -914,7 +914,7 @@ async function purchaseDesiredAugs(ns) {
     // Donate to factions if necessary (using a ram-dodging script of course)
     if (Object.keys(purchaseFactionDonations).length > 0 && Object.values(purchaseFactionDonations).some(v => v > 0)) {
         if (await getNsDataThroughFile(ns, 'JSON.parse(ns.args[0]).reduce((success, o) => success && ns.singularity.donateToFaction(o.faction, o.repDonation), true)',
-            'AutoPlay/Temp/facman-donate.txt', [JSON.stringify(Object.keys(purchaseFactionDonations).map(f => ({ faction: f, repDonation: purchaseFactionDonations[f] })))]))
+            '/AutoPlay/Temp/facman-donate.txt', [JSON.stringify(Object.keys(purchaseFactionDonations).map(f => ({ faction: f, repDonation: purchaseFactionDonations[f] })))]))
             log(ns, `SUCCESS: Donated to ${Object.keys(purchaseFactionDonations).length} factions to gain access to desired augmentations.`, printToTerminal, 'success')
         else
             log(ns, `ERROR: One or more attempts to donate to factions for reputation failed. Go investigate!`, printToTerminal, 'error');
@@ -923,7 +923,7 @@ async function purchaseDesiredAugs(ns) {
     if (purchaseableAugs.length == 0)
         return log(ns, `INFO: Cannot afford to buy any augmentations at this time.`, printToTerminal)
     const purchased = await getNsDataThroughFile(ns, 'JSON.parse(ns.args[0]).reduce((total, o) => total + (ns.singularity.purchaseAugmentation(o.faction, o.augmentation) ? 1 : 0), 0)',
-        'AutoPlay/Temp/facman-purchase-augs.txt', [JSON.stringify(purchaseableAugs.map(aug => ({ faction: aug.getFromJoined(), augmentation: aug.name })))]);
+        '/AutoPlay/Temp/facman-purchase-augs.txt', [JSON.stringify(purchaseableAugs.map(aug => ({ faction: aug.getFromJoined(), augmentation: aug.name })))]);
     if (purchased == purchaseableAugs.length)
         log(ns, `SUCCESS: Purchased ${purchased} desired augmentations in optimal order!`, printToTerminal, 'success')
     else

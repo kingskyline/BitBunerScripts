@@ -1,4 +1,4 @@
-import { parseShortNumber } from 'AutoPlay/helpers.js'
+import { parseShortNumber } from '/AutoPlay/helpers.js'
 /** @param {NS} ns **/
 export async function main(ns) {
     let parsed = parseShortNumber(ns.args[0]);

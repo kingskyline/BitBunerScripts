@@ -1,7 +1,7 @@
 import {
     instanceCount, getConfiguration, getNsDataThroughFile, runCommand, getActiveSourceFiles, tryGetBitNodeMultipliers,
     formatMoney, formatNumberShort, formatDuration, getStockSymbols
-} from 'AutoPlay/helpers.js'
+} from '/AutoPlay/helpers.js'
 
 let disableShorts = false;
 let commission = 100000; // Buy/sell commission. Expected profit must exceed this to buy anything.
@@ -79,7 +79,7 @@ export async function main(ns) {
         if (!hasTixApiAccess) return log(ns, 'ERROR: Cannot liquidate stocks because we do not have Tix Api Access', true, 'error');
         log(ns, 'INFO: Killing any other stockmaster processes...', false, 'info');
         await runCommand(ns, `ns.ps().filter(proc => proc.filename == '${ns.getScriptName()}' && !proc.args.includes('-l') && !proc.args.includes('--liquidate'))` +
-            `.forEach(proc => ns.kill(proc.pid))`, 'AutoPlay/Temp/kill-stockmarket-scripts.js');
+            `.forEach(proc => ns.kill(proc.pid))`, '/AutoPlay/Temp/kill-stockmarket-scripts.js');
         log(ns, 'INFO: Checking for and liquidating any stocks...', false, 'info');
         await liquidate(ns); // Sell all stocks
         return;
@@ -259,7 +259,7 @@ async function getStockInfoDict(ns, stockFunction) {
     if (allStockSymbols == null) throw new Error(`No WSE API Access yet, this call to ns.stock.${stockFunction} is premature.`);
     return await getNsDataThroughFile(ns,
         `Object.fromEntries(ns.args.map(sym => [sym, ns.stock.${stockFunction}(sym)]))`,
-        `AutoPlay/Temp/stock-${stockFunction}.txt`, allStockSymbols);
+        `/AutoPlay/Temp/stock-${stockFunction}.txt`, allStockSymbols);
 };
 
 /** @param {NS} ns **/
@@ -423,16 +423,16 @@ async function updateForecast(ns, allStocks, has4s) {
         if (showMarketSummary) await updateForecastFile(ns, summary); else log(ns, summary);
     }
     // Write out a file of stock probabilities so that other scripts can make use of this (e.g. hack orchestrator can manipulate the stock market)
-    await ns.write('AutoPlay/Temp/stock-probabilities.txt', JSON.stringify(Object.fromEntries(
+    await ns.write('/AutoPlay/Temp/stock-probabilities.txt', JSON.stringify(Object.fromEntries(
         allStocks.map(stk => [stk.sym, { prob: stk.prob, sharesLong: stk.sharesLong, sharesShort: stk.sharesShort }]))), "w");
 }
 
 // Helpers to display the stock market summary in a separate window.
-let summaryFile = 'AutoPlay/Temp/stockmarket-summary.txt';
+let summaryFile = '/AutoPlay/Temp/stockmarket-summary.txt';
 let updateForecastFile = async (ns, summary) => await ns.write(summaryFile, summary, 'w');
 let launchSummaryTail = async ns => {
     let summaryTailScript = summaryFile.replace('.txt', '-tail.js');
-    if (await getNsDataThroughFile(ns, `ns.scriptRunning('${summaryTailScript}', ns.getHostname())`, 'AutoPlay/Temp/stockmarket-summary-is-running.txt'))
+    if (await getNsDataThroughFile(ns, `ns.scriptRunning('${summaryTailScript}', ns.getHostname())`, '/AutoPlay/Temp/stockmarket-summary-is-running.txt'))
         return;
     //await getNsDataThroughFile(ns, `ns.scriptKill('${summaryTailScript}', ns.getHostname())`, summaryTailScript.replace('.js', '-kill.js')); // Only needed if we're changing the script below
     await runCommand(ns, `ns.disableLog('sleep'); tail(ns); let lastRead = '';

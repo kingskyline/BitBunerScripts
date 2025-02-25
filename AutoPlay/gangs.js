@@ -1,7 +1,7 @@
 import {
     log, getConfiguration, instanceCount, getNsDataThroughFile, getActiveSourceFiles, runCommand, tryGetBitNodeMultipliers,
     formatMoney, formatNumberShort, formatDuration
-} from 'AutoPlay/helpers.js'
+} from '/AutoPlay/helpers.js'
 
 // Global config
 const updateInterval = 200; // We can improve our timing by updating more often than gang stats do (which is every 2 seconds for stats, every 20 seconds for territory)
@@ -109,7 +109,7 @@ async function initialize(ns) {
                 loggedWaiting = true;
             }
             if (bitNode == 2 || ns.heart.break() <= -54000)
-                await runCommand(ns, `ns.args.forEach(g => ns.gang.createGang(g))`, 'AutoPlay/Temp/gang-createGang.js', gangsByPower);
+                await runCommand(ns, `ns.args.forEach(g => ns.gang.createGang(g))`, '/AutoPlay/Temp/gang-createGang.js', gangsByPower);
         }
         catch (err) {
             log(ns, `WARNING: AutoPlay/gangs.js Caught (and suppressed) an unexpected error while waiting to join a gang:\n` +
@@ -141,8 +141,8 @@ async function initialize(ns) {
                 log(ns, `WARNING: This script makes use of singularity functions, which are quite expensive before you have SF4.3. ` +
                     `Unless you have a lot of free RAM for temporary scripts, you may get runtime errors.`);
             const augmentationNames = await getNsDataThroughFile(ns, `ns.singularity.getAugmentationsFromFaction(ns.args[0])`, null, [myGangFaction]);
-            const ownedAugmentations = await getNsDataThroughFile(ns, `ns.singularity.getOwnedAugmentations(true)`, 'AutoPlay/Temp/player-augs-purchased.txt');
-            const dictAugRepReqs = await getDict(ns, augmentationNames, 'singularity.getAugmentationRepReq', 'AutoPlay/Temp/aug-repreqs.txt');
+            const ownedAugmentations = await getNsDataThroughFile(ns, `ns.singularity.getOwnedAugmentations(true)`, '/AutoPlay/Temp/player-augs-purchased.txt');
+            const dictAugRepReqs = await getDict(ns, augmentationNames, 'singularity.getAugmentationRepReq', '/AutoPlay/Temp/aug-repreqs.txt');
             // Due to a bug, gangs appear to provide "The Red Pill" even when it's unavailable (outside of BN2), so ignore this one.
             requiredRep = augmentationNames.filter(aug => !ownedAugmentations.includes(aug) && aug != "The Red Pill").reduce((max, aug) => Math.max(max, dictAugRepReqs[aug]), -1);
             log(ns, `Highest augmentation reputation cost is ${formatNumberShort(requiredRep)}`);
@@ -269,7 +269,7 @@ async function updateMemberActivities(ns, dictMemberInfo = null, forceTask = nul
     if (workOrders.length == 0) return;
     // Set the activities in bulk using a ram-dodging script
     if (await getNsDataThroughFile(ns, `JSON.parse(ns.args[0]).reduce((success, m) => success && ns.gang.setMemberTask(m.name, m.task), true)`,
-        'AutoPlay/Temp/gang-set-member-tasks.txt', [JSON.stringify(workOrders)]))
+        '/AutoPlay/Temp/gang-set-member-tasks.txt', [JSON.stringify(workOrders)]))
         log(ns, `INFO: Assigned ${workOrders.length}/${Object.keys(dictMembers).length} gang member tasks (${workOrders.map(o => o.task).filter((v, i, self) => self.indexOf(v) === i).join(", ")})`)
     else
         log(ns, `ERROR: Failed to set member task of one or more members: ` + JSON.stringify(workOrders), false, 'error');
@@ -391,7 +391,7 @@ async function doRecruitMember(ns) {
     let i = 0, newMemberName;
     do { newMemberName = `Thug ${++i}`; } while (myGangMembers.includes(newMemberName) || myGangMembers.includes(newMemberName + " Understudy"));
     if (i < myGangMembers.length) newMemberName += " Understudy"; // Pay our respects to the deceased
-    if (await getNsDataThroughFile(ns, `ns.gang.canRecruitMember() && ns.gang.recruitMember(ns.args[0])`, 'AutoPlay/Temp/gang-recruit-member.txt', [newMemberName])) {
+    if (await getNsDataThroughFile(ns, `ns.gang.canRecruitMember() && ns.gang.recruitMember(ns.args[0])`, '/AutoPlay/Temp/gang-recruit-member.txt', [newMemberName])) {
         myGangMembers.push(newMemberName);
         assignedTasks[newMemberName] = "Train " + (isHackGang ? "Hacking" : "Combat");
         lastMemberReset[newMemberName] = Date.now();
@@ -468,7 +468,7 @@ async function doUpgradePurchases(ns, purchaseOrder) {
     const totalCost = purchaseOrder.reduce((t, e) => t + e.cost, 0);
     const getOrderSummary = (items) => items.map(o => `${o.member} ${o.type}: "${o.equipmentName}"`).join(", ");
     const orderOutcomes = await getNsDataThroughFile(ns, `JSON.parse(ns.args[0]).map(o => ns.gang.purchaseEquipment(o.member, o.equipmentName))`,
-        'AutoPlay/Temp/gang-upgrade-members.txt', [JSON.stringify(purchaseOrder)]);
+        '/AutoPlay/Temp/gang-upgrade-members.txt', [JSON.stringify(purchaseOrder)]);
     const succeeded = [], failed = [];
     for (let i = 0; i < orderOutcomes.length; i++)
         (orderOutcomes[i] ? succeeded : failed).push(purchaseOrder[i]);
@@ -534,7 +534,7 @@ async function enableOrDisableWarfare(ns, myGangInfo) {
 }
 
 // Ram-dodging helper to get gang information for each item in a list
-const getGangInfoDict = /**@returns{Promise<{[gangMember: string]: any;}>}*/async (ns, elements, gangFunction) => await getDict(ns, elements, `gang.${gangFunction}`, `AutoPlay/Temp/gang-${gangFunction}.txt`);
+const getGangInfoDict = /**@returns{Promise<{[gangMember: string]: any;}>}*/async (ns, elements, gangFunction) => await getDict(ns, elements, `gang.${gangFunction}`, `/AutoPlay/Temp/gang-${gangFunction}.txt`);
 const getDict = /**@returns{Promise<{[key: string]: any;}>}*/ async (ns, elements, nsFunction, fileName) => await getNsDataThroughFile(ns, `Object.fromEntries(ns.args.map(o => [o, ns.${nsFunction}(o)]))`, fileName, elements);
 
 /** Gang calcs shamefully stolen from https://github.com/bitburner-official/bitburner-src/blob/dev/src/Gang/GangMember.ts **/

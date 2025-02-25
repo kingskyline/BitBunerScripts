@@ -2,7 +2,7 @@ import {
     log, getFilePath, getConfiguration, instanceCount, getNsDataThroughFile, runCommand, waitForProcessToComplete,
     getActiveSourceFiles, tryGetBitNodeMultipliers, getStocksValue, unEscapeArrayArgs,
     formatMoney, formatDuration, formatNumber, getErrorInfo, tail
-} from 'AutoPlay/helpers.js'
+} from '/AutoPlay/helpers.js'
 
 const argsSchema = [ // The set of all command line arguments
     ['next-bn', 0], // If we destroy the current BN, the next BN to start
@@ -43,7 +43,7 @@ export function autocomplete(data, args) {
  * @param {NS} ns **/
 export async function main(ns) {
     const persistentLog = "AutoPlay/log.autopilot.txt";
-    const factionManagerOutputFile = "AutoPlay/Temp/affordable-augs.txt"; // Temp file produced by faction manager with status information
+    const factionManagerOutputFile = "/AutoPlay/Temp/affordable-augs.txt"; // Temp file produced by faction manager with status information
     const defaultBnOrder = [ // The order in which we intend to play bitnodes
         // 1st Priority: Key new features and/or major stat boosts
         4.3,  // Normal. Need singularity to automate everything, and need the API costs reduced from 16x -> 4x -> 1x reliably do so from the start of each BN
@@ -159,7 +159,7 @@ export async function main(ns) {
                 installedAugmentations = [];
                 playerInstalledAugCount = null; // 'null' is treated as 'Unknown'
             } else {
-                installedAugmentations = await getNsDataThroughFile(ns, 'ns.singularity.getOwnedAugmentations()', 'AutoPlay/Temp/player-augs-installed.txt');
+                installedAugmentations = await getNsDataThroughFile(ns, 'ns.singularity.getOwnedAugmentations()', '/AutoPlay/Temp/player-augs-installed.txt');
                 playerInstalledAugCount = installedAugmentations.length;
             }
         } catch (err) {
@@ -238,7 +238,7 @@ export async function main(ns) {
         // Now that grafting is a thing, we need to check if new augmentations have been installed between resets
         if ((4 in unlockedSFs)) { // Note: Installed augmentations can also be obtained from getResetInfo() (without SF4), but this seems unintended and will probably be removed from the game.
             try {
-                installedAugmentations = await getNsDataThroughFile(ns, 'ns.singularity.getOwnedAugmentations()', 'AutoPlay/Temp/player-augs-installed.txt');
+                installedAugmentations = await getNsDataThroughFile(ns, 'ns.singularity.getOwnedAugmentations()', '/AutoPlay/Temp/player-augs-installed.txt');
                 playerInstalledAugCount = installedAugmentations.length;
             } catch (err) {
                 log(ns, `WARNING: failed to update owned augmentations (low RAM?)`, true);
@@ -344,7 +344,7 @@ export async function main(ns) {
         if (wdHack === null) { // If we haven't checked yet, see if w0r1d_d43m0n (server) has been unlocked and get its required hack level
             wdHack = await getNsDataThroughFile(ns, 'ns.scan("The-Cave").includes("w0r1d_d43m0n") ? ' +
                 'ns.getServerRequiredHackingLevel("w0r1d_d43m0n"): -1',
-                'AutoPlay/Temp/wd-hackingLevel.txt');
+                '/AutoPlay/Temp/wd-hackingLevel.txt');
             if (wdHack == -1) wdHack = Number.POSITIVE_INFINITY; // Cannot stringify infinity, so use -1 in transit
         }
         // Detect if a BN win condition has been met
@@ -364,7 +364,7 @@ export async function main(ns) {
         if (!bnComplete && playerInBladeburner)
             bnComplete = await getNsDataThroughFile(ns,
                 `ns.bladeburner.getActionCountRemaining('blackop', 'Operation Daedalus') === 0`,
-                'AutoPlay/Temp/bladeburner-completed.txt');
+                '/AutoPlay/Temp/bladeburner-completed.txt');
 
         // HEURISTIC: If we naturally get within 75% of the if w0r1d_d43m0n hack stat requirement,
         //    switch AutoPlay/daemon.js to prioritize earning hack exp for the remainder of the BN
@@ -398,7 +398,7 @@ export async function main(ns) {
                 reasonToStay = `Detected that you only have ${numSleeves} sleeves, but you could have ${shouldHaveSleeveCount}.`;
             else {
                 let sleeveInfo = (/** @returns {SleevePerson[]} */() => [])();
-                sleeveInfo = await getNsDataThroughFile(ns, `ns.args.map(i => ns.sleeve.getSleeve(i))`, 'AutoPlay/Temp/sleeve-getSleeve-all.txt', [...Array(numSleeves).keys()]);
+                sleeveInfo = await getNsDataThroughFile(ns, `ns.args.map(i => ns.sleeve.getSleeve(i))`, '/AutoPlay/Temp/sleeve-getSleeve-all.txt', [...Array(numSleeves).keys()]);
                 if (sleeveInfo.some(s => s.memory < 100))
                     reasonToStay = `Detected that you have ${numSleeves}/${shouldHaveSleeveCount} sleeves, but they do not all have the maximum memory of 100:\n  ` +
                         sleeveInfo.map((s, i) => `- Sleeve ${i} has ${s.memory}/100 memory`).join('\n  ');
@@ -432,7 +432,7 @@ export async function main(ns) {
         // Use the new special singularity function to automate entering a new BN
         pid = await runCommand(ns, `ns.singularity.destroyW0r1dD43m0n(ns.args[0], ns.args[1]` +
             `, { sourceFileOverrides: new Map() }` + // Work around a long-standing bug on bitburner-official.github.io TODO: Remove when no longer needed
-            `)`, 'AutoPlay/Temp/singularity-destroyW0r1dD43m0n.js', [nextBn, ns.getScriptName()]);
+            `)`, '/AutoPlay/Temp/singularity-destroyW0r1dD43m0n.js', [nextBn, ns.getScriptName()]);
         if (pid) {
             log(ns, `SUCCESS: Initiated process ${pid} to execute 'singularity.destroyW0r1dD43m0n' with args: [${nextBn}, ${ns.getScriptName()}]`, true, 'success')
             await waitForProcessToComplete(ns, pid);
@@ -511,11 +511,11 @@ export async function main(ns) {
         if ((9 in unlockedSFs) && getTimeInAug() >= options['time-before-boosting-best-hack-server']
             && 0 != bitNodeMults.ScriptHackMoney * bitNodeMults.ScriptHackMoneyGain) // No point in boosting hack income if it's scaled to 0 in the current BN
         {
-            const strServerIncomeInfo = ns.read('AutoPlay/Temp/analyze-hack.txt');	// HACK: Steal this file that Daemon also relies on
+            const strServerIncomeInfo = ns.read('/AutoPlay/Temp/analyze-hack.txt');	// HACK: Steal this file that Daemon also relies on
             if (strServerIncomeInfo) {
                 const incomeByServer = JSON.parse(strServerIncomeInfo);
                 dictServerHackReqs ??= await getNsDataThroughFile(ns, 'Object.fromEntries(ns.args.map(server => [server, ns.getServerRequiredHackingLevel(server)]))',
-                    'AutoPlay/Temp/getServerRequiredHackingLevel-all.txt', incomeByServer.map(s => s.hostname));
+                    '/AutoPlay/Temp/getServerRequiredHackingLevel-all.txt', incomeByServer.map(s => s.hostname));
                 const [bestServer, gain] = incomeByServer.filter(s => dictServerHackReqs[s.hostname] <= player.skills.hacking)
                     .reduce(([bestServer, bestIncome], target) => target.gainRate > bestIncome ? [target.hostname, target.gainRate] : [bestServer, bestIncome], [null, -1]);
                 const spendHashesMultThreshold = options['spend-hashes-on-server-hacking-threshold'];
@@ -848,7 +848,7 @@ export async function main(ns) {
         // If we are in Daedalus, and we do not yet have enough favour to unlock rep donations with Daedalus,
         // but we DO have enough rep to earn that favor on our next restart, trigger an install immediately (need at least 1 aug)
         // (doesn't apply in BN8, since we can immediately donate to all factions)
-        if (player.factions.includes("Daedalus") && bitNodeMults.RepToDonateToFaction !== 0 && ns.read("AutoPlay/Temp/Daedalus-donation-rep-attained.txt")) {
+        if (player.factions.includes("Daedalus") && bitNodeMults.RepToDonateToFaction !== 0 && ns.read("/AutoPlay/Temp/Daedalus-donation-rep-attained.txt")) {
             shouldReset = true;
             resetStatus = `We have enough reputation with Daedalus to unlock donations on our next reset.\n${resetStatus}`;
             if (totalCost == 0) totalCost = 1; // Hack, logic below expects some non-zero reserve in preparation for ascending.

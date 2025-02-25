@@ -144,7 +144,7 @@ export function getFnIsAliveViaNsPs(ns) {
  * Has the capacity to retry if there is a failure (e.g. due to lack of RAM available). Not recommended for performance-critical code.
  * @param {NS} ns The nestcript instance passed to your script's main entry point
  * @param {string} command The ns command that should be invoked to get the desired data (e.g. "ns.getServer('home')" )
- * @param {string?} fName (default "AutoPlay/Temp/{command-name}.txt") The name of the file to which data will be written to disk by a temporary process
+ * @param {string?} fName (default "/AutoPlay/Temp/{command-name}.txt") The name of the file to which data will be written to disk by a temporary process
  * @param {any[]?} args args to be passed in as arguments to command being run as a new script.
  * @param {boolean?} verbose (default false) If set to true, pid and result of command are logged.
  * TODO: Switch to an args object, this is getting ridiculous
@@ -156,7 +156,7 @@ export async function getNsDataThroughFile(ns, command, fName = null, args = [],
 }
 
 /** Convert a command name like "ns.namespace.someFunction(args, args)" into
- * a default file path for running that command "AutoPlay/Temp/namespace-someFunction.txt" */
+ * a default file path for running that command "/AutoPlay/Temp/namespace-someFunction.txt" */
 function getDefaultCommandFileName(command, ext = '.txt') {
     // If prefixed with "ns.", strip that out
     let fname = command;
@@ -166,7 +166,7 @@ function getDefaultCommandFileName(command, ext = '.txt') {
     fname = fname.replace(/ *\([^)]*\) */g, "");
     // Replace any dereferencing (dots) with dashes
     fname = fname.replace(".", "-");
-    return `AutoPlay/Temp/${fname}${ext}`
+    return `/AutoPlay/Temp/${fname}${ext}`
 }
 
 /**
@@ -177,7 +177,7 @@ function getDefaultCommandFileName(command, ext = '.txt') {
  * @param {NS} ns The nestcript instance passed to your script's main entry point
  * @param {function} fnRun A single-argument function used to start the new sript, e.g. `ns.run` or `(f,...args) => ns.exec(f, "home", ...args)`
  * @param {string} command The ns command that should be invoked to get the desired data (e.g. "ns.getServer('home')" )
- * @param {string?} fName (default "AutoPlay/Temp/{command-name}.txt") The name of the file to which data will be written to disk by a temporary process
+ * @param {string?} fName (default "/AutoPlay/Temp/{command-name}.txt") The name of the file to which data will be written to disk by a temporary process
  * @param {any[]?} args args to be passed in as arguments to command being run as a new script.
  * @param {boolean?} verbose (default false) If set to true, pid and result of command are logged.
  **/
@@ -268,7 +268,7 @@ export function jsonReviver(key, val) {
 /** Evaluate an arbitrary ns command by writing it to a new script and then running or executing it.
  * @param {NS} ns The nestcript instance passed to your script's main entry point
  * @param {string} command The ns command that should be invoked to get the desired data (e.g. "ns.getServer('home')" )
- * @param {string?} fileName (default "AutoPlay/Temp/{command-name}.txt") The name of the file to which data will be written to disk by a temporary process
+ * @param {string?} fileName (default "/AutoPlay/Temp/{command-name}.txt") The name of the file to which data will be written to disk by a temporary process
  * @param {any[]?} args args to be passed in as arguments to command being run as a new script.
  * @param {boolean?} verbose (default false) If set to true, the evaluation result of the command is printed to the terminal
  */
@@ -299,7 +299,7 @@ function getExports(ns) {
  * @param {NS} ns The nestcript instance passed to your script's main entry point
  * @param {function} fnRun A single-argument function used to start the new sript, e.g. `ns.run` or `(f,...args) => ns.exec(f, "home", ...args)`
  * @param {string} command The ns command that should be invoked to get the desired data (e.g. "ns.getServer('home')" )
- * @param {string?} fileName (default "AutoPlay/Temp/{commandhash}-data.txt") The name of the file to which data will be written to disk by a temporary process
+ * @param {string?} fileName (default "/AutoPlay/Temp/{commandhash}-data.txt") The name of the file to which data will be written to disk by a temporary process
  * @param {any[]?} args args to be passed in as arguments to command being run as a new script.
  **/
 export async function runCommand_Custom(ns, fnRun, command, fileName, args = [], verbose = false, maxRetries = 5, retryDelayMs = 50, silent = false) {
@@ -549,7 +549,7 @@ export async function getActiveSourceFiles_Custom(ns, fnGetNsDataThroughFile, in
     try {
         dictSourceFiles = await fnGetNsDataThroughFile(ns,
             `Object.fromEntries(ns.singularity.getOwnedSourceFiles().map(sf => [sf.n, sf.lvl]))`,
-            'AutoPlay/Temp/getOwnedSourceFiles-asDict.txt', null, null, null, null, silent);
+            '/AutoPlay/Temp/getOwnedSourceFiles-asDict.txt', null, null, null, null, silent);
     } catch { } // If this fails (e.g. presumably due to low RAM or no singularity access), default to an empty dictionary
     dictSourceFiles ??= {};
 
@@ -598,7 +598,7 @@ export async function tryGetBitNodeMultipliers_Custom(ns, fnGetNsDataThroughFile
     } catch { }
     if (canGetBitNodeMultipliers) {
         try {
-            return await fnGetNsDataThroughFile(ns, 'ns.getBitNodeMultipliers()', 'AutoPlay/Temp/bitNode-multipliers.txt', null, null, null, null, /*silent:*/true);
+            return await fnGetNsDataThroughFile(ns, 'ns.getBitNodeMultipliers()', '/AutoPlay/Temp/bitNode-multipliers.txt', null, null, null, null, /*silent:*/true);
         } catch { }
     }
     return await getHardCodedBitNodeMultipliers(ns, fnGetNsDataThroughFile);
@@ -614,7 +614,7 @@ export async function tryGetBitNodeMultipliers_Custom(ns, fnGetNsDataThroughFile
 export async function getHardCodedBitNodeMultipliers(ns, fnGetNsDataThroughFile, bnOverride = null) {
     let bn = bnOverride ?? 1;
     if (!bnOverride) {
-        try { bn = (await fnGetNsDataThroughFile(ns, 'ns.getResetInfo()', 'AutoPlay/Temp/reset-info.txt')).currentNode; }
+        try { bn = (await fnGetNsDataThroughFile(ns, 'ns.getResetInfo()', '/AutoPlay/Temp/reset-info.txt')).currentNode; }
         catch { /* We are expected to be fault-tolerant in low-ram conditions */ }
     }
     return Object.fromEntries(Object.entries({
@@ -686,7 +686,7 @@ export async function instanceCount(ns, onHost = "home", warn = true, tailOtherI
     let otherInstancePids = (/**@returns{number[]}*/() => [])();
     try {
         otherInstancePids = await getNsDataThroughFile(ns, 'ns.ps(ns.args[0]).filter(p => p.filename == ns.args[1]).map(p => p.pid)',
-            'AutoPlay/Temp/ps-other-instances.txt', [onHost, scriptName]);
+            '/AutoPlay/Temp/ps-other-instances.txt', [onHost, scriptName]);
     } catch (err) {
         if (err.message?.includes("insufficient RAM") ?? false) {
             log(ns, `ERROR: Not enough free RAM on ${onHost} to run ${scriptName}.` +
@@ -713,7 +713,7 @@ export async function instanceCount(ns, onHost = "home", warn = true, tailOtherI
 export async function getStockSymbols(ns) {
     return await getNsDataThroughFile(ns,
         `(() => { try { return ns.stock.getSymbols(); } catch { return null; } })()`,
-        'AutoPlay/Temp/stock-symbols.txt');
+        '/AutoPlay/Temp/stock-symbols.txt');
 }
 
 /** Helper function to get the total value of stocks using as little RAM as possible.
@@ -724,7 +724,7 @@ export async function getStocksValue(ns) {
     if (stockSymbols == null) return 0; // No TIX API Access
     const stockGetAll = async (fn) => await getNsDataThroughFile(ns,
         `(() => { try { return Object.fromEntries(ns.args.map(sym => [sym, ns.stock.${fn}(sym)])); } catch { return null; } })()`,
-        `AutoPlay/Temp/stock-${fn}-all.txt`, stockSymbols);
+        `/AutoPlay/Temp/stock-${fn}-all.txt`, stockSymbols);
     const askPrices = await stockGetAll('getAskPrice');
     // Workaround for Bug #304: If we lost TIX access, our cache of stock symbols will still be valid, but we won't be able to get prices.
     if (askPrices == null) return 0; // No TIX API Access
@@ -850,7 +850,7 @@ export function tail(ns, processId = undefined) {
     processId ??= ns.pid
     ns.tail(processId);
     // Don't move or resize tail windows that were previously opened and possibly moved by the player
-    const tailFile = 'AutoPlay/Temp/helpers-tailed-pids.txt'; // Use a file so it can be wiped on reset
+    const tailFile = '/AutoPlay/Temp/helpers-tailed-pids.txt'; // Use a file so it can be wiped on reset
     const fileContents = ns.read(tailFile);
     const tailedPids = fileContents.length > 1 ? JSON.parse(fileContents) : [];
     if (tailedPids.includes(processId))

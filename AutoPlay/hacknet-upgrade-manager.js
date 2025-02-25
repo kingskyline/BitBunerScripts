@@ -1,4 +1,4 @@
-import { getConfiguration, disableLogs, formatDuration, formatMoney, } from 'AutoPlay/helpers.js'
+import { getConfiguration, disableLogs, formatDuration, formatMoney, } from '/AutoPlay/helpers.js'
 
 let haveHacknetServers = true; // Cached flag after detecting whether we do (or don't) have hacknet servers
 const argsSchema = [

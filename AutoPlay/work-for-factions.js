@@ -1,7 +1,7 @@
 import {
     instanceCount, getConfiguration, getNsDataThroughFile, getFilePath, getActiveSourceFiles, tryGetBitNodeMultipliers,
     formatDuration, formatMoney, formatNumberShort, disableLogs, log, getErrorInfo, tail
-} from 'AutoPlay/helpers.js'
+} from '/AutoPlay/helpers.js'
 
 let options;
 const argsSchema = [
@@ -190,13 +190,13 @@ async function loadStartupData(ns) {
     bitNodeMults = await tryGetBitNodeMultipliers(ns);
 
     // Get some faction and augmentation information to decide what remains to be purchased
-    dictFactionFavors = await getNsDataThroughFile(ns, dictCommand('ns.singularity.getFactionFavor(o)'), 'AutoPlay/Temp/getFactionFavors.txt', allKnownFactions);
-    const dictFactionAugs = await getNsDataThroughFile(ns, dictCommand('ns.singularity.getAugmentationsFromFaction(o)'), 'AutoPlay/Temp/getAugmentationsFromFactions.txt', allKnownFactions);
+    dictFactionFavors = await getNsDataThroughFile(ns, dictCommand('ns.singularity.getFactionFavor(o)'), '/AutoPlay/Temp/getFactionFavors.txt', allKnownFactions);
+    const dictFactionAugs = await getNsDataThroughFile(ns, dictCommand('ns.singularity.getAugmentationsFromFaction(o)'), '/AutoPlay/Temp/getAugmentationsFromFactions.txt', allKnownFactions);
     const augmentationNames = [...new Set(Object.values(dictFactionAugs).flat())];
-    const dictAugRepReqs = await getNsDataThroughFile(ns, dictCommand('ns.singularity.getAugmentationRepReq(o)'), 'AutoPlay/Temp/getAugmentationRepReqs.txt', augmentationNames);
-    const dictAugStats = await getNsDataThroughFile(ns, dictCommand('ns.singularity.getAugmentationStats(o)'), 'AutoPlay/Temp/getAugmentationStats.txt', augmentationNames);
-    const ownedAugmentations = await getNsDataThroughFile(ns, `ns.singularity.getOwnedAugmentations(true)`, 'AutoPlay/Temp/player-augs-purchased.txt');
-    const installedAugmentations = await getNsDataThroughFile(ns, `ns.singularity.getOwnedAugmentations()`, 'AutoPlay/Temp/player-augs-installed.txt');
+    const dictAugRepReqs = await getNsDataThroughFile(ns, dictCommand('ns.singularity.getAugmentationRepReq(o)'), '/AutoPlay/Temp/getAugmentationRepReqs.txt', augmentationNames);
+    const dictAugStats = await getNsDataThroughFile(ns, dictCommand('ns.singularity.getAugmentationStats(o)'), '/AutoPlay/Temp/getAugmentationStats.txt', augmentationNames);
+    const ownedAugmentations = await getNsDataThroughFile(ns, `ns.singularity.getOwnedAugmentations(true)`, '/AutoPlay/Temp/player-augs-purchased.txt');
+    const installedAugmentations = await getNsDataThroughFile(ns, `ns.singularity.getOwnedAugmentations()`, '/AutoPlay/Temp/player-augs-installed.txt');
     // Based on what augmentations we own, we can change our own behaviour (e.g. whether to allow work to steal focus)
     hasFocusPenalty = !installedAugmentations.includes("Neuroreceptor Management Implant"); // Check if we have an augmentation that lets us not have to focus at work (always nicer if we can background it)
     shouldFocus = !options['no-focus'] && hasFocusPenalty; // Focus at work for the best rate of rep gain, unless focus activities are disabled via command line
@@ -559,8 +559,8 @@ async function earnFactionInvite(ns, factionName) {
         ns.print(`You must be a CO (e.g. CEO/CTO) of a company to earn an invite to "Silhouette". This may take a while!`);
         let factionConfig = companySpecificConfigs.find(f => f.name == "Silhouette"); // We set up Silhouette with a "company-specific-config" so that we can work for an invite like any megacorporation faction.
         let companyNames = preferredCompanyFactionOrder.map(f => companySpecificConfigs.find(cf => cf.name == f)?.companyName || f);
-        let favorByCompany = await getNsDataThroughFile(ns, dictCommand('ns.singularity.getCompanyFavor(o)'), 'AutoPlay/Temp/getCompanyFavors.txt', companyNames);
-        let repByCompany = await getNsDataThroughFile(ns, dictCommand('ns.singularity.getCompanyRep(o)'), 'AutoPlay/Temp/getCompanyReps.txt', companyNames);
+        let favorByCompany = await getNsDataThroughFile(ns, dictCommand('ns.singularity.getCompanyFavor(o)'), '/AutoPlay/Temp/getCompanyFavors.txt', companyNames);
+        let repByCompany = await getNsDataThroughFile(ns, dictCommand('ns.singularity.getCompanyRep(o)'), '/AutoPlay/Temp/getCompanyReps.txt', companyNames);
         // Change the company to work for into whichever company we can get to CEO fastest with.
         // Minimize needed_rep/rep_gain_rate. CEO job is at 3.2e6 rep, so (3.2e6-current_rep)/(100+favor).
         // Also take into account that some companies will have lowered rep requirement if they are backdoored
@@ -582,7 +582,7 @@ async function earnFactionInvite(ns, factionName) {
         const [totalLevels, totalRam, totalCores] = await getNsDataThroughFile(ns,
             '[...Array(ns.hacknet.numNodes()).keys()].map(i => ns.hacknet.getNodeStats(i))' +
             '.reduce(([l, r, c], s) => [l + s.level, r + s.ram, c + s.cores], [0, 0, 0])',
-            'AutoPlay/Temp/hacknet-Netburners-stats.txt');
+            '/AutoPlay/Temp/hacknet-Netburners-stats.txt');
         if (totalLevels < 100 || totalRam < 8 || totalCores < 4)
             return ns.print(`${reasonPrefix} hacknet total stats do not yet meet requirements: ` +
                 `${totalLevels}/100 levels, ${totalRam}/8 ram, ${totalCores}/4 cores`);
@@ -631,7 +631,7 @@ export async function crimeForKillsKarmaStats(ns, reqKills, reqKarma, reqStats, 
     let crime, lastCrime, crimeTime, lastStatusUpdateTime, needStats;
     while (forever || (needStats = anyStatsDeficient(player)) || player.numPeopleKilled < reqKills || -ns.heart.break() < reqKarma) {
         if (!forever && breakToMainLoop()) return ns.print('INFO: Interrupting crime to check on high-level priorities.');
-        let crimeChances = await getNsDataThroughFile(ns, `Object.fromEntries(ns.args.map(c => [c, ns.singularity.getCrimeChance(c)]))`, 'AutoPlay/Temp/crime-chances.txt', bestCrimesByDifficulty);
+        let crimeChances = await getNsDataThroughFile(ns, `Object.fromEntries(ns.args.map(c => [c, ns.singularity.getCrimeChance(c)]))`, '/AutoPlay/Temp/crime-chances.txt', bestCrimesByDifficulty);
         let karma = -ns.heart.break();
         crime = crimeCount < 2 ? (crimeChances["homicide"] > 0.75 ? "homicide" : "mug") : // Start with a few fast & easy crimes to boost stats if we're just starting
             (!needStats && (player.numPeopleKilled < reqKills || karma < reqKarma)) ? "homicide" : // If *all* we need now is kills or Karma, homicide is the fastest way to do that, even at low proababilities
@@ -795,7 +795,7 @@ async function checkFactionInvites(ns) {
 /** @param {NS} ns
  *  @returns {Promise<GangGenInfo|boolean>} Gang information, if we're in a gang, or False */
 async function getGangInfo(ns) {
-    return await getNsDataThroughFile(ns, 'ns.gang.inGang() ? ns.gang.getGangInformation() : false', 'AutoPlay/Temp/gang-stats.txt')
+    return await getNsDataThroughFile(ns, 'ns.gang.inGang() ? ns.gang.getGangInformation() : false', '/AutoPlay/Temp/gang-stats.txt')
 }
 
 /** @param {NS} ns
@@ -830,7 +830,7 @@ async function daedalusSpecialCheck(ns, favorRepRequired, currentReputation) {
     if (currentReputation >= 0.9 * 2.500e6 * bitNodeMults.AugmentationRepCost) return false;
     log(ns, `INFO: You have enough reputation with Daedalus (have ${formatNumberShort(currentReputation)}) that you will ` +
         `unlock donations (needed ${formatNumberShort(favorRepRequired)}) with them on your next reset.`, !notifiedAboutDaedalus, "info");
-    ns.write("AutoPlay/Temp/Daedalus-donation-rep-attained.txt", "True", "w"); // HACK: To notify autopilot that we can reset for rep now.
+    ns.write("/AutoPlay/Temp/Daedalus-donation-rep-attained.txt", "True", "w"); // HACK: To notify autopilot that we can reset for rep now.
     notifiedAboutDaedalus = true;
 }
 
@@ -1104,7 +1104,7 @@ export async function workForAllMegacorps(ns, megacorpFactionsInPreferredOrder, 
 async function trySpendHashes(ns, spendOn) {
     return await getNsDataThroughFile(ns,
         'ns.hacknet.numHashes() + ns.hacknet.spendHashes(ns.args[0]) - ns.hacknet.numHashes()',
-        'AutoPlay/Temp/hacknet-spendHashes-returnSpent.txt', [spendOn]);
+        '/AutoPlay/Temp/hacknet-spendHashes-returnSpent.txt', [spendOn]);
 }
 
 /** If we're wealthy, hashes have relatively little monetary value, spend hacknet-node hashes on contracts to gain rep faster
@@ -1140,7 +1140,7 @@ async function checkForBackdoor(ns, companyName) {
  * @returns {Promise<{[serverName:string]: boolean}>} An entry per server, and whether they're backdoored. */
 async function backdoorStatusByServer(ns) {
     return await getNsDataThroughFile(ns, `Object.fromEntries(ns.args.map(s => [s, ns.getServer(s).backdoorInstalled]))`,
-        'AutoPlay/Temp/getServer-backdoorInstalled-all.txt', Object.values(serverByCompany));
+        '/AutoPlay/Temp/getServer-backdoorInstalled-all.txt', Object.values(serverByCompany));
 }
 
 /** @param {NS} ns */

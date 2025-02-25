@@ -1,4 +1,4 @@
-import { log, getConfiguration, instanceCount, getNsDataThroughFile, formatMoney, formatRam, formatDuration } from 'AutoPlay/helpers.js'
+import { log, getConfiguration, instanceCount, getNsDataThroughFile, formatMoney, formatRam, formatDuration } from '/AutoPlay/helpers.js'
 
 // The purpose of the host manager is to buy the best servers it can
 // until it thinks RAM is underutilized enough that you don't need to anymore.
@@ -58,7 +58,7 @@ export async function main(ns) {
     log(ns, `INFO: Max purchasable RAM has been detected as 2^${maxPurchasableServerRamExponent} (${formatRam(2 ** maxPurchasableServerRamExponent)}).`);
 
     // Gather one-time info in advance about how much RAM each size of server costs (Up to 2^30 to be future-proof, but we expect everything abouve 2^20 to be Infinity)
-    costByRamExponent = await getNsDataThroughFile(ns, 'Object.fromEntries([...Array(30).keys()].map(i => [i, ns.getPurchasedServerCost(2**i)]))', 'AutoPlay/Temp/host-costs.txt');
+    costByRamExponent = await getNsDataThroughFile(ns, 'Object.fromEntries([...Array(30).keys()].map(i => [i, ns.getPurchasedServerCost(2**i)]))', '/AutoPlay/Temp/host-costs.txt');
 
     keepRunning = options.c || options['run-continuously'];
     pctReservedMoney = options['reserve-percent'];
@@ -105,7 +105,7 @@ function setStatus(ns, logMessage) {
   * Attempts to buy a server at or better than your home machine. **/
 async function tryToBuyBestServerPossible(ns) {
     // Scan the set of all servers on the network that we own (or rooted) to get a sense of current RAM utilization
-    let rootedServers = await getNsDataThroughFile(ns, 'scanAllServers(ns).filter(s => ns.hasRootAccess(s))', 'AutoPlay/Temp/rooted-servers.txt');
+    let rootedServers = await getNsDataThroughFile(ns, 'scanAllServers(ns).filter(s => ns.hasRootAccess(s))', '/AutoPlay/Temp/rooted-servers.txt');
     // Gether the list of all purchased servers.
     let purchasedServers = null;
     try { purchasedServers = await getNsDataThroughFile(ns, 'ns.getPurchasedServers()', null, null, null, 3, 5, /* silent errors */ true); } catch { /* Ignore */ }

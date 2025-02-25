@@ -1,4 +1,4 @@
-import { getConfiguration, disableLogs, formatMoney as importedFormatMoney, formatDuration, scanAllServers } from 'AutoPlay/helpers.js'
+import { getConfiguration, disableLogs, formatMoney as importedFormatMoney, formatDuration, scanAllServers } from '/AutoPlay/helpers.js'
 
 const argsSchema = [
     ['all', false], // Set to true to report on all servers, not just the ones within our hack level
@@ -177,7 +177,7 @@ export async function main(ns) {
         serverListByExp += `\n ${order++} ${server_eval[i].hostname}, with ${server_eval[i].expRate.toPrecision(3)} exp per ram-second`;
     ns.print(serverListByExp);
 
-    ns.write('AutoPlay/Temp/analyze-hack.txt', JSON.stringify(server_eval.map(s => ({
+    ns.write('/AutoPlay/Temp/analyze-hack.txt', JSON.stringify(server_eval.map(s => ({
         hostname: s.hostname,
         gainRate: s.gainRate,
         expRate: s.expRate

@@ -1,4 +1,4 @@
-import { instanceCount, getNsDataThroughFile, formatDuration, formatNumberShort, tail } from 'AutoPlay/helpers.js'
+import { instanceCount, getNsDataThroughFile, formatDuration, formatNumberShort, tail } from '/AutoPlay/helpers.js'
 import { crimeForKillsKarmaStats } from './AutoPlay/work-for-factions.js'
 
 const crimes = ["shoplift", "rob store", "mug", "larceny", "deal drugs", "bond forgery", "traffick arms", "homicide", "grand theft auto", "kidnap", "assassinate", "heist"]

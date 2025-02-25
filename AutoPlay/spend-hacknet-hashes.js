@@ -1,4 +1,4 @@
-import { log as log_helper, getConfiguration, disableLogs, formatMoney, formatDuration, formatNumberShort, getErrorInfo } from 'AutoPlay/helpers.js'
+import { log as log_helper, getConfiguration, disableLogs, formatMoney, formatDuration, formatNumberShort, getErrorInfo } from '/AutoPlay/helpers.js'
 
 const sellForMoney = 'Sell for Money';
 

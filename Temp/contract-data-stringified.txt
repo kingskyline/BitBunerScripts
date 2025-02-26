@@ -1,0 +1,1 @@
+{"contract-133261-BachmanAssociates.cct":"[2,3,2,2,6,3,3,2,3,4,3]"}

@@ -23,6 +23,13 @@ export async function main(ns) {
   else if (currentHackingLevel < 30) { var target = "joesguns" }
   else if (currentHackingLevel < 120) { var target = "harakiri-sushi" }
   else if (currentHackingLevel < 300) { var target = "iron-gym" }
+  else if (currentHackingLevel < 400) { var target = "phantasy" }
+  else if (currentHackingLevel < 500) { var target = "crush-fitness" }
+  else if (currentHackingLevel < 600) { var target = "the-hub" }
+  else if (currentHackingLevel < 700) { var target = "rothman-uni" }
+  else if (currentHackingLevel < 800) { var target = "computek" }
+  else if (currentHackingLevel < 900) { var target = "netlink" }
+  else if (currentHackingLevel < 999) { var target = "alpha-ent" }
 
   else { var target = "iron-gym" }
 

@@ -1,48 +1,36 @@
 /** @param {NS} ns **/
 export async function main(ns) {
-    // List of targets to hack with the script
-    const hackTargets = [
-
-        "n00dles",
-        "foodnstuff",
-        "sigma-cosmetics",
-        "joesguns",
-        "nectar-net",
-        "hong-fang-tea",
-        "harakiri-sushi",
-        "neo-net",
-        "zer0",
-        "max-hardware",
-        "iron-gym",
-        "phantasy",
-        "silver-helix",
-        "crush-fitness",
-        "omega-net",
-        "johnson-ortho",
-        "the-hub",
-        "rothman-uni",
-        "computek",
-        "millenium-fitness",
-        "netlink",
-        "aevum-police",
-        "summit-uni",
-        "catalyst",
-        "rho-construction",
-        "alpha-ent",
-        "syscore",
-        "lexo-corp"
-     
-    ];
+    // Get player's hacking level
+    const hackingLevel = ns.getHackingLevel();
     
-    const hackScript = "/basic/basichomehack.js"; // Path to the hack script
-    const delayBetweenHacks = 2000; // 2 seconds delay between starting each hack
+    // Define target lists
+    const earlyGameTargets = [
+        "foodnstuff", "sigma-cosmetics", "joesguns", "nectar-net", "hong-fang-tea",
+        "harakiri-sushi", "neo-net", "zer0", "max-hardware", "iron-gym",
+        "phantasy", "silver-helix", "crush-fitness", "omega-net", "johnson-ortho",
+        "the-hub", "rothman-uni", "computek", "millenium-fitness", "netlink"
+    ];
 
-    // Function to print and log messages nicely
+    const lateGameTargets = [
+        "foodnstuff", "sigma-cosmetics", "joesguns", "nectar-net", "hong-fang-tea",
+        "harakiri-sushi", "neo-net", "zer0", "max-hardware", "iron-gym",
+        "phantasy", "silver-helix", "crush-fitness", "omega-net", "johnson-ortho",
+        "the-hub", "rothman-uni", "computek", "millenium-fitness", "netlink",        
+        "aevum-police", "summit-uni", "catalyst", "rho-construction", "alpha-ent",
+        "syscore", "lexo-corp", "zb-institute"
+    ];
+
+    // Select targets based on level
+    const hackTargets = hackingLevel > 700 ? lateGameTargets : earlyGameTargets;
+    
+    const hackScript = "/basic/basichomehack.js"; 
+    const delayBetweenHacks = 1000; // 1 second delay
+
     function logMessage(type, message) {
         let formattedMessage;
         switch (type) {
             case "start":
-                formattedMessage = `\n🟢 === STARTING HACKING SEQUENCE ===\n${message}\n`;
+                formattedMessage = `\n🟢 === STARTING HACKING SEQUENCE (Level ${hackingLevel}) ===\n${message}\n`;
                 break;
             case "hack":
                 formattedMessage = `💀 [HACKING] → Targeting ${message}...`;
@@ -68,15 +56,12 @@ export async function main(ns) {
 
     logMessage("start", "🚀 Initiating hacking sequence...");
 
-    // Loop through each target and start a hack
     for (let target of hackTargets) {
         try {
             logMessage("hack", `Running ${hackScript} on ${target}...`);
 
-            // Run the hack script on the target
             const execResult = ns.run(hackScript, 1, target);
 
-            // Check if the execution was successful
             if (execResult === 0) {
                 logMessage("error", target);
             } else {

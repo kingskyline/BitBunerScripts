@@ -1,8 +1,9 @@
 /** @param {NS} ns **/
 export async function main(ns) {
     // List of scripts to run sequentially with a delay between them
-    const scripts = [
+    const scripts = [  
         { script: "/utilites/BestCustomHud.js", delay: 10000 },
+        { script: "/utilites/SubnetGame.js", delay: 10000 },
         { script: "/contracts/findandsolve.js", delay: 10000 },   
         { script: "/misc/hacknet-manager.js", delay: 10000 },
         { script: "/stats/ShowHackNetIncome.js", delay: 10000 },
